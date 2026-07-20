@@ -29,6 +29,7 @@
 #include "debug_log.h"
 #include "nxd_dhcp_client.h"
 #include "nx_stm32_eth_config.h"
+#include "nx_stm32_phy_driver.h"
 
 /* USER CODE END Includes */
 
@@ -48,11 +49,20 @@
 #define APP_NETX_RECEIVE_WAIT        (TX_TIMER_TICKS_PER_SECOND / 10U)
 #define APP_NETX_ACCEPT_WAIT         (TX_TIMER_TICKS_PER_SECOND / 5U)
 #define APP_NETX_DIAG_INTERVAL       (5U * TX_TIMER_TICKS_PER_SECOND)
+#define APP_NETX_TCP_TX_QUEUE_DEPTH  4U
+#define APP_NETX_TCP_RETRY_COUNT     3U
+#define APP_NETX_LISTEN_BACKLOG      4U
+#define APP_NETX_MUTEX_STALL_LOG     (4U * TX_TIMER_TICKS_PER_SECOND)
+#define APP_NETX_MUTEX_STALL_RESET   (12U * TX_TIMER_TICKS_PER_SECOND)
 #if (APP_DIAGNOSTICS_WEB_ENABLE != 0U)
 #define APP_WEB_THREAD_STACK_SIZE     4096U
 #define APP_WEB_THREAD_PRIORITY       16U
 #define APP_WEB_ACCEPT_WAIT           TX_TIMER_TICKS_PER_SECOND
-#define APP_WEB_IO_WAIT               (2U * TX_TIMER_TICKS_PER_SECOND)
+#define APP_WEB_REQUEST_WAIT          ((TX_TIMER_TICKS_PER_SECOND >= 2U) ? \
+                                       (TX_TIMER_TICKS_PER_SECOND / 2U) : 1U)
+#define APP_WEB_SEND_WAIT             (2U * TX_TIMER_TICKS_PER_SECOND)
+#define APP_WEB_TX_QUEUE_DEPTH        4U
+#define APP_WEB_LISTEN_BACKLOG        4U
 #define APP_WEB_OUTPUT_SIZE           1200U
 #endif
 
@@ -69,9 +79,11 @@ static NX_PACKET_POOL app_packet_pool;
 static NX_IP app_ip;
 static NX_DHCP app_dhcp;
 static NX_TCP_SOCKET app_server_socket;
+static UINT app_server_socket_created;
 static TX_THREAD app_network_thread;
 #if (APP_DIAGNOSTICS_WEB_ENABLE != 0U)
 static NX_TCP_SOCKET app_web_socket;
+static UINT app_web_socket_created;
 static TX_THREAD app_web_thread;
 #endif
 
@@ -96,6 +108,9 @@ static UCHAR app_last_dhcp_state = 0xFFU;
 static UINT app_last_address_ready;
 static ULONG app_last_ip_address;
 static ULONG app_next_diag_tick;
+static UINT app_netx_initialized;
+static ULONG app_ip_mutex_stall_start;
+static UINT app_ip_mutex_stall_logged;
 
 /* USER CODE END PV */
 
@@ -109,9 +124,11 @@ static UINT App_Network_Process_Packet(NX_TCP_SOCKET *socket_ptr,
                                        ULONG *receive_length);
 static UINT App_Network_Status_Update(UINT client_active);
 static UINT App_Network_Link_Service(VOID);
+static VOID App_Network_Dhcp_Renew(VOID);
 static VOID App_Dhcp_State_Change(NX_DHCP *dhcp_ptr, UCHAR new_state);
 static VOID App_Network_Periodic_Diagnostics(ULONG ip_address);
-static VOID App_Network_Socket_Reset(VOID);
+static UINT App_Network_Socket_Open(VOID);
+static UINT App_Network_Socket_Reset(VOID);
 #if (APP_DIAGNOSTICS_WEB_ENABLE != 0U)
 typedef struct
 {
@@ -125,6 +142,8 @@ static UINT App_Web_Send_Page(NX_TCP_SOCKET *socket_ptr);
 static UINT App_Web_Writer_Flush(APP_WEB_WRITER *writer);
 static VOID App_Web_Append_Text(APP_WEB_WRITER *writer, const char *text);
 static VOID App_Web_Append_U32(APP_WEB_WRITER *writer, ULONG value);
+static UINT App_Web_Socket_Open(VOID);
+static UINT App_Web_Socket_Reset(VOID);
 #endif
 
 /* USER CODE END PFP */
@@ -248,6 +267,8 @@ UINT MX_NetXDuo_Init(VOID *memory_ptr)
     return ret;
   }
 
+  app_netx_initialized = 1U;
+
   /* USER CODE END MX_NetXDuo_Init */
 
   return ret;
@@ -320,24 +341,26 @@ static VOID App_Network_Periodic_Diagnostics(ULONG ip_address)
 
 static UINT App_Network_Link_Service(VOID)
 {
-  ULONG physical_link = NX_FALSE;
   ULONG driver_value = 0U;
+  int32_t phy_state;
   UINT link_up;
   UINT status;
 
-  status = nx_ip_driver_direct_command(&app_ip, NX_LINK_GET_STATUS,
-                                       &physical_link);
-  if (status != NX_SUCCESS)
+  /* Reading the PHY does not require app_ip.nx_ip_protection.  The previous
+     NX_LINK_GET_STATUS path waited on that mutex forever, so a damaged or
+     abandoned NetX lock also stopped cable detection and DHCP controls. */
+  phy_state = nx_eth_phy_get_link_state();
+  if (phy_state == ETH_PHY_STATUS_ERROR)
   {
     if (app_phy_state_known == 0U)
     {
-      Debug_Log_U32("[NETX] PHY status read failed: ", status);
+      Debug_Log_Line("[NETX] PHY status read failed");
       app_phy_state_known = 1U;
     }
     return NX_FALSE;
   }
 
-  link_up = (physical_link != NX_FALSE) ? NX_TRUE : NX_FALSE;
+  link_up = (phy_state > ETH_PHY_STATUS_LINK_DOWN) ? NX_TRUE : NX_FALSE;
   if ((app_phy_state_known == 0U) || (link_up != app_last_phy_link))
   {
     Debug_Log_Line((link_up != NX_FALSE) ?
@@ -405,11 +428,101 @@ static UINT App_Network_Link_Service(VOID)
 VOID App_NetXDuo_RequestDhcpRenew(VOID)
 {
   app_dhcp_renew_requested = 1U;
+  Debug_Log_Line("[NETX] DHCP RENEW requested");
 }
 
 VOID App_NetXDuo_RequestDisconnect(VOID)
 {
   app_disconnect_requested = 1U;
+  Debug_Log_Line("[NETX] CLOSE CLIENT requested (TCP 7001 only)");
+}
+
+static VOID App_Network_Dhcp_Renew(VOID)
+{
+  UINT status;
+
+  if (app_dhcp_started == 0U)
+  {
+    Debug_Log_Line("[NETX] DHCP renew deferred: link/client not started");
+    return;
+  }
+
+  status = nx_dhcp_force_renew(&app_dhcp);
+  if (status == NX_SUCCESS)
+  {
+    Debug_Log_Line("[NETX] DHCP renew started");
+    return;
+  }
+
+  /* A stale DHCP state should be rebuilt instead of silently ignoring the
+     button.  Link service will start a clean discovery on its next pass. */
+  Debug_Log_U32("[NETX] DHCP renew failed, restarting: ", status);
+  (void)nx_dhcp_stop(&app_dhcp);
+  (void)nx_dhcp_reinitialize(&app_dhcp);
+  app_dhcp_started = 0U;
+  app_last_dhcp_start_status = NX_SUCCESS;
+}
+
+VOID App_NetXDuo_WatchdogService(VOID)
+{
+  TX_THREAD *owner;
+  ULONG now;
+  UINT ip_thread_state;
+  UINT owner_state = TX_TERMINATED;
+
+  if (app_netx_initialized == 0U)
+  {
+    return;
+  }
+
+  /* This check intentionally does not call a NetX service: it must remain
+     operational when the NetX protection mutex itself is wedged. */
+  TX_INTERRUPT_SAVE_AREA
+  TX_DISABLE
+  ip_thread_state = app_ip.nx_ip_thread.tx_thread_state;
+  owner = app_ip.nx_ip_protection.tx_mutex_owner;
+  if (owner != TX_NULL)
+  {
+    owner_state = owner->tx_thread_state;
+  }
+  TX_RESTORE
+
+  if (ip_thread_state != TX_MUTEX_SUSP)
+  {
+    app_ip_mutex_stall_start = 0U;
+    app_ip_mutex_stall_logged = 0U;
+    return;
+  }
+
+  now = tx_time_get();
+  if (app_ip_mutex_stall_start == 0U)
+  {
+    app_ip_mutex_stall_start = now;
+    return;
+  }
+
+  if (((now - app_ip_mutex_stall_start) >= APP_NETX_MUTEX_STALL_LOG) &&
+      (app_ip_mutex_stall_logged == 0U))
+  {
+    app_ip_mutex_stall_logged = 1U;
+    Debug_Log_Line("[NETX] ERROR: IP protection mutex is stuck");
+    Debug_Log_Line((owner != TX_NULL) ? owner->tx_thread_name :
+                   "[NETX] mutex owner: none/corrupt");
+    Debug_Log_U32("[NETX] mutex owner state: ", owner_state);
+    Debug_Log_U32("[NETX] mutex ownership count: ",
+                  app_ip.nx_ip_protection.tx_mutex_ownership_count);
+    Debug_Log_U32("[NETX] packet pool free: ",
+                  app_packet_pool.nx_packet_pool_available);
+  }
+
+  if ((now - app_ip_mutex_stall_start) >= APP_NETX_MUTEX_STALL_RESET)
+  {
+    /* Releasing an unknown owner's mutex would leave TCP/IP lists in an
+       undefined state.  A controlled MCU restart is the only safe recovery
+       after the stack invariant has already been broken. */
+    Debug_Log_Line("[NETX] fatal stall: controlled watchdog reset");
+    NVIC_SystemReset();
+  }
 }
 
 static UINT App_Network_Status_Update(UINT client_active)
@@ -535,13 +648,79 @@ static UINT App_Network_Process_Packet(NX_TCP_SOCKET *socket_ptr,
   return status;
 }
 
-static VOID App_Network_Socket_Reset(VOID)
+static UINT App_Network_Socket_Open(VOID)
 {
+  UINT status;
+
+  status = nx_tcp_socket_create(&app_ip, &app_server_socket,
+                                "F746 data server", NX_IP_NORMAL,
+                                NX_FRAGMENT_OKAY, NX_IP_TIME_TO_LIVE,
+                                4096U, NX_NULL, NX_NULL);
+  if (status != NX_SUCCESS)
+  {
+    return status;
+  }
+  app_server_socket_created = 1U;
+
+  status = nx_tcp_socket_transmit_configure(&app_server_socket,
+                                             APP_NETX_TCP_TX_QUEUE_DEPTH,
+                                             NX_IP_PERIODIC_RATE,
+                                             APP_NETX_TCP_RETRY_COUNT, 1U);
+  if (status == NX_SUCCESS)
+  {
+    status = nx_tcp_server_socket_listen(&app_ip, APP_NETX_TCP_PORT,
+                                         &app_server_socket,
+                                         APP_NETX_LISTEN_BACKLOG, NX_NULL);
+  }
+  if (status != NX_SUCCESS)
+  {
+    (void)nx_tcp_socket_delete(&app_server_socket);
+    app_server_socket_created = 0U;
+  }
+  return status;
+}
+
+static UINT App_Network_Socket_Reset(VOID)
+{
+  UINT status;
+
+  if (app_server_socket_created == 0U)
+  {
+    return App_Network_Socket_Open();
+  }
+
   (void)nx_tcp_socket_disconnect(&app_server_socket, NX_NO_WAIT);
-  (void)nx_tcp_server_socket_unaccept(&app_server_socket);
-  (void)nx_tcp_server_socket_relisten(&app_ip, APP_NETX_TCP_PORT,
-                                      &app_server_socket);
+  status = nx_tcp_server_socket_unaccept(&app_server_socket);
+  if (status != NX_SUCCESS)
+  {
+    Debug_Log_U32("[NETX] TCP 7001 unaccept failed: ", status);
+    App_State_SetLanClient(0U);
+    return status;
+  }
+
+  status = nx_tcp_server_socket_relisten(&app_ip, APP_NETX_TCP_PORT,
+                                         &app_server_socket);
+  if (status == NX_CONNECTION_PENDING)
+  {
+    /* NetX has already attached a queued SYN to this socket.  This is a
+       successful relisten result, not an error requiring reconstruction. */
+    status = NX_SUCCESS;
+  }
+  else if (status == NX_INVALID_RELISTEN)
+  {
+    /* The listen record is absent, but the unaccepted socket is CLOSED and
+       reusable.  Restore only the listener; do not delete a live socket. */
+    status = nx_tcp_server_socket_listen(&app_ip, APP_NETX_TCP_PORT,
+                                         &app_server_socket,
+                                         APP_NETX_LISTEN_BACKLOG, NX_NULL);
+  }
+  else if (status != NX_SUCCESS)
+  {
+    Debug_Log_U32("[NETX] TCP 7001 relisten failed: ", status);
+  }
+
   App_State_SetLanClient(0U);
+  return status;
 }
 
 static VOID App_Network_Thread(ULONG thread_input)
@@ -553,17 +732,7 @@ static VOID App_Network_Thread(ULONG thread_input)
 
   (void)thread_input;
 
-  status = nx_tcp_socket_create(&app_ip, &app_server_socket,
-                                "F746 data server", NX_IP_NORMAL,
-                                NX_FRAGMENT_OKAY, NX_IP_TIME_TO_LIVE,
-                                4096U, NX_NULL, NX_NULL);
-  if (status != NX_SUCCESS)
-  {
-    return;
-  }
-
-  status = nx_tcp_server_socket_listen(&app_ip, APP_NETX_TCP_PORT,
-                                       &app_server_socket, 1U, NX_NULL);
+  status = App_Network_Socket_Open();
   if (status != NX_SUCCESS)
   {
     return;
@@ -574,7 +743,7 @@ static VOID App_Network_Thread(ULONG thread_input)
     if (app_dhcp_renew_requested != 0U)
     {
       app_dhcp_renew_requested = 0U;
-      (void)nx_dhcp_force_renew(&app_dhcp);
+      App_Network_Dhcp_Renew();
     }
 
     if (App_Network_Status_Update(0U) != NX_SUCCESS)
@@ -600,7 +769,7 @@ static VOID App_Network_Thread(ULONG thread_input)
       if (app_dhcp_renew_requested != 0U)
       {
         app_dhcp_renew_requested = 0U;
-        (void)nx_dhcp_force_renew(&app_dhcp);
+        App_Network_Dhcp_Renew();
       }
 
       packet_ptr = NX_NULL;
@@ -622,7 +791,14 @@ static VOID App_Network_Thread(ULONG thread_input)
       }
     }
 
-    App_Network_Socket_Reset();
+    do
+    {
+      status = App_Network_Socket_Reset();
+      if (status != NX_SUCCESS)
+      {
+        tx_thread_sleep(APP_NETX_ACCEPT_WAIT);
+      }
+    } while (status != NX_SUCCESS);
   }
 }
 
@@ -638,7 +814,7 @@ static UINT App_Web_Writer_Flush(APP_WEB_WRITER *writer)
   }
 
   writer->status = nx_packet_allocate(&app_packet_pool, &packet_ptr,
-                                      NX_TCP_PACKET, APP_WEB_IO_WAIT);
+                                      NX_TCP_PACKET, APP_WEB_SEND_WAIT);
   if (writer->status != NX_SUCCESS)
   {
     return writer->status;
@@ -646,7 +822,7 @@ static UINT App_Web_Writer_Flush(APP_WEB_WRITER *writer)
 
   writer->status = nx_packet_data_append(packet_ptr, app_web_output,
                                          writer->length, &app_packet_pool,
-                                         APP_WEB_IO_WAIT);
+                                         APP_WEB_SEND_WAIT);
   if (writer->status != NX_SUCCESS)
   {
     (void)nx_packet_release(packet_ptr);
@@ -654,7 +830,7 @@ static UINT App_Web_Writer_Flush(APP_WEB_WRITER *writer)
   }
 
   writer->status = nx_tcp_socket_send(writer->socket, packet_ptr,
-                                      APP_WEB_IO_WAIT);
+                                      APP_WEB_SEND_WAIT);
   if (writer->status != NX_SUCCESS)
   {
     (void)nx_packet_release(packet_ptr);
@@ -870,6 +1046,91 @@ static UINT App_Web_Send_Page(NX_TCP_SOCKET *socket_ptr)
   return App_Web_Writer_Flush(&writer);
 }
 
+static UINT App_Web_Socket_Open(VOID)
+{
+  UINT status;
+
+  status = nx_tcp_socket_create(&app_ip, &app_web_socket,
+                                "F746 diagnostics HTTP", NX_IP_NORMAL,
+                                NX_FRAGMENT_OKAY, NX_IP_TIME_TO_LIVE,
+                                4096U, NX_NULL, NX_NULL);
+  if (status != NX_SUCCESS)
+  {
+    return status;
+  }
+  app_web_socket_created = 1U;
+
+  status = nx_tcp_socket_transmit_configure(&app_web_socket,
+                                             APP_WEB_TX_QUEUE_DEPTH,
+                                             NX_IP_PERIODIC_RATE,
+                                             APP_NETX_TCP_RETRY_COUNT, 1U);
+  if (status == NX_SUCCESS)
+  {
+    status = nx_tcp_server_socket_listen(&app_ip,
+                                         APP_DIAGNOSTICS_WEB_PORT,
+                                         &app_web_socket,
+                                         APP_WEB_LISTEN_BACKLOG, NX_NULL);
+  }
+  if (status != NX_SUCCESS)
+  {
+    (void)nx_tcp_socket_delete(&app_web_socket);
+    app_web_socket_created = 0U;
+  }
+  return status;
+}
+
+static UINT App_Web_Socket_Reset(VOID)
+{
+  UINT disconnect_status;
+  UINT status;
+
+  if (app_web_socket_created == 0U)
+  {
+    return App_Web_Socket_Open();
+  }
+
+  /* The response packets are only queued by nx_tcp_socket_send().  Give
+     NetX a bounded interval to transmit/ack them before unaccepting the
+     socket; NX_NO_WAIT here produced a valid TCP connect followed by an
+     empty HTTP response. */
+  disconnect_status = nx_tcp_socket_disconnect(&app_web_socket,
+                                                APP_WEB_SEND_WAIT);
+  if ((disconnect_status != NX_SUCCESS) &&
+      (disconnect_status != NX_NOT_CONNECTED))
+  {
+    Debug_Log_U32("[WEB] graceful disconnect status: ",
+                  disconnect_status);
+    /* A timed-out close is still forced to a known state by unaccept below. */
+  }
+
+  status = nx_tcp_server_socket_unaccept(&app_web_socket);
+  if (status != NX_SUCCESS)
+  {
+    Debug_Log_U32("[WEB] unaccept failed: ", status);
+    return status;
+  }
+
+  status = nx_tcp_server_socket_relisten(&app_ip,
+                                         APP_DIAGNOSTICS_WEB_PORT,
+                                         &app_web_socket);
+  if (status == NX_CONNECTION_PENDING)
+  {
+    status = NX_SUCCESS;
+  }
+  else if (status == NX_INVALID_RELISTEN)
+  {
+    status = nx_tcp_server_socket_listen(&app_ip,
+                                         APP_DIAGNOSTICS_WEB_PORT,
+                                         &app_web_socket,
+                                         APP_WEB_LISTEN_BACKLOG, NX_NULL);
+  }
+  else if (status != NX_SUCCESS)
+  {
+    Debug_Log_U32("[WEB] relisten failed: ", status);
+  }
+  return status;
+}
+
 static VOID App_Web_Thread(ULONG thread_input)
 {
   NX_PACKET *request_packet;
@@ -878,21 +1139,15 @@ static VOID App_Web_Thread(ULONG thread_input)
 
   (void)thread_input;
 
-  status = nx_tcp_socket_create(&app_ip, &app_web_socket,
-                                "F746 diagnostics HTTP", NX_IP_NORMAL,
-                                NX_FRAGMENT_OKAY, NX_IP_TIME_TO_LIVE,
-                                4096U, NX_NULL, NX_NULL);
-  if (status != NX_SUCCESS)
+  do
   {
-    return;
-  }
-
-  status = nx_tcp_server_socket_listen(&app_ip, APP_DIAGNOSTICS_WEB_PORT,
-                                       &app_web_socket, 2U, NX_NULL);
-  if (status != NX_SUCCESS)
-  {
-    return;
-  }
+    status = App_Web_Socket_Open();
+    if (status != NX_SUCCESS)
+    {
+      Debug_Log_U32("[WEB] initial socket/listen failed: ", status);
+      tx_thread_sleep(APP_WEB_ACCEPT_WAIT);
+    }
+  } while (status != NX_SUCCESS);
 
 #if (APP_DIAGNOSTICS_UART_ENABLE != 0U)
   Debug_Log_U32("[WEB] diagnostics HTTP port: ",
@@ -917,21 +1172,28 @@ static VOID App_Web_Thread(ULONG thread_input)
 
     request_packet = NX_NULL;
     status = nx_tcp_socket_receive(&app_web_socket, &request_packet,
-                                   APP_WEB_IO_WAIT);
+                                   APP_WEB_REQUEST_WAIT);
     if (request_packet != NX_NULL)
     {
       (void)nx_packet_release(request_packet);
     }
     if (status == NX_SUCCESS)
     {
-      (void)App_Web_Send_Page(&app_web_socket);
+      status = App_Web_Send_Page(&app_web_socket);
+      if (status != NX_SUCCESS)
+      {
+        Debug_Log_U32("[WEB] page send failed: ", status);
+      }
     }
 
-    (void)nx_tcp_socket_disconnect(&app_web_socket, APP_WEB_IO_WAIT);
-    (void)nx_tcp_server_socket_unaccept(&app_web_socket);
-    (void)nx_tcp_server_socket_relisten(&app_ip,
-                                        APP_DIAGNOSTICS_WEB_PORT,
-                                        &app_web_socket);
+    do
+    {
+      status = App_Web_Socket_Reset();
+      if (status != NX_SUCCESS)
+      {
+        tx_thread_sleep(APP_WEB_ACCEPT_WAIT);
+      }
+    } while (status != NX_SUCCESS);
   }
 }
 

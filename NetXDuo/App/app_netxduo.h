@@ -56,6 +56,7 @@ UINT MX_NetXDuo_Init(VOID *memory_ptr);
 /* USER CODE BEGIN EFP */
 VOID App_NetXDuo_RequestDhcpRenew(VOID);
 VOID App_NetXDuo_RequestDisconnect(VOID);
+VOID App_NetXDuo_WatchdogService(VOID);
 
 /* USER CODE END EFP */
 

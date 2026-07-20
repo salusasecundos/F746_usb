@@ -15,6 +15,9 @@
                                          (TX_TIMER_TICKS_PER_SECOND / 20U) : 1U)
 #define APP_VNC_TX_CHUNK_SIZE           1400U
 #define APP_VNC_INPUT_DRAIN_LIMIT       16U
+#define APP_VNC_TX_QUEUE_DEPTH          6U
+#define APP_VNC_TCP_RETRY_COUNT         3U
+#define APP_VNC_LISTEN_BACKLOG          2U
 #define APP_VNC_DESKTOP_NAME            "STM32F746 GUIX"
 
 #define RFB_C2S_SET_PIXEL_FORMAT        0U
@@ -949,8 +952,16 @@ static UINT App_VNC_Socket_Open(void)
   }
   vnc_socket_created = 1U;
 
-  status = nx_tcp_server_socket_listen(vnc_ip, APP_VNC_SERVER_PORT,
-                                       &vnc_socket, 1U, NX_NULL);
+  status = nx_tcp_socket_transmit_configure(&vnc_socket,
+                                             APP_VNC_TX_QUEUE_DEPTH,
+                                             NX_IP_PERIODIC_RATE,
+                                             APP_VNC_TCP_RETRY_COUNT, 1U);
+  if (status == NX_SUCCESS)
+  {
+    status = nx_tcp_server_socket_listen(vnc_ip, APP_VNC_SERVER_PORT,
+                                         &vnc_socket,
+                                         APP_VNC_LISTEN_BACKLOG, NX_NULL);
+  }
   if (status != NX_SUCCESS)
   {
     (void)nx_tcp_socket_delete(&vnc_socket);
@@ -989,33 +1000,19 @@ static UINT App_VNC_Socket_Reset(void)
 
   status = nx_tcp_server_socket_relisten(vnc_ip, APP_VNC_SERVER_PORT,
                                          &vnc_socket);
-  if (status == NX_SUCCESS)
+  if (status == NX_CONNECTION_PENDING)
   {
-    return status;
+    return NX_SUCCESS;
   }
-
-  /* A failed relisten must not leave the server looping forever on a stale
-     socket.  Remove the empty listener and recreate both objects. */
-  Debug_Log_U32("[VNC] relisten failed, rebuilding socket: ", status);
-  status = nx_tcp_server_socket_unlisten(vnc_ip, APP_VNC_SERVER_PORT);
-  if (status != NX_SUCCESS)
+  if (status == NX_INVALID_RELISTEN)
   {
-    Debug_Log_U32("[VNC] unlisten failed: ", status);
-    return status;
+    status = nx_tcp_server_socket_listen(vnc_ip, APP_VNC_SERVER_PORT,
+                                         &vnc_socket,
+                                         APP_VNC_LISTEN_BACKLOG, NX_NULL);
   }
-
-  status = nx_tcp_socket_delete(&vnc_socket);
-  if (status != NX_SUCCESS)
+  else if (status != NX_SUCCESS)
   {
-    Debug_Log_U32("[VNC] socket delete failed: ", status);
-    return status;
-  }
-  vnc_socket_created = 0U;
-
-  status = App_VNC_Socket_Open();
-  if (status != NX_SUCCESS)
-  {
-    Debug_Log_U32("[VNC] socket rebuild failed: ", status);
+    Debug_Log_U32("[VNC] relisten failed: ", status);
   }
   return status;
 }

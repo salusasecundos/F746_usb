@@ -26,6 +26,7 @@
 
 #include "app_guix.h"
 #include "app_bme280.h"
+#include "app_netxduo.h"
 #include "app_state.h"
 #include "app_usbx_device.h"
 #include "debug_log.h"
@@ -177,6 +178,7 @@ static VOID Debug_Heartbeat_Thread(ULONG argument)
   {
     tx_thread_sleep(service_period);
     App_USBX_Device_Service();
+    App_NetXDuo_WatchdogService();
 
     now = tx_time_get();
     if ((now - last_heartbeat) >= (5U * TX_TIMER_TICKS_PER_SECOND))
