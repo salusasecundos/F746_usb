@@ -1,0 +1,6 @@
+../Middlewares/ST/guix/common/src/gx_binres_language_table_load.c:74:6:_gx_binres_resource_header_load	1
+../Middlewares/ST/guix/common/src/gx_binres_language_table_load.c:143:6:_gx_binres_string_header_load	1
+../Middlewares/ST/guix/common/src/gx_binres_language_table_load.c:203:6:_gx_binres_language_header_load	1
+../Middlewares/ST/guix/common/src/gx_binres_language_table_load.c:270:13:_gx_binres_language_table_buffer_allocate	8
+../Middlewares/ST/guix/common/src/gx_binres_language_table_load.c:382:6:_gx_binres_language_table_load	13
+../Middlewares/ST/guix/common/src/gx_binres_language_table_load.c:561:6:_gx_binres_language_table_load_ext	9

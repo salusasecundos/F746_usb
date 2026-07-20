@@ -1,0 +1,4 @@
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_rotated_pixelmap_rotate.c:87:13:_gx_display_driver_32bpp_rotated_pixelmap_raw_rotate	27
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_rotated_pixelmap_rotate.c:378:13:_gx_display_driver_32bpp_rotated_pixelmap_alpha_rotate	22
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_rotated_pixelmap_rotate.c:647:13:_gx_display_driver_32bpp_rotated_pixelmap_simple_rotate	15
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_rotated_pixelmap_rotate.c:842:6:_gx_display_driver_32bpp_rotated_pixelmap_rotate	5

@@ -1,0 +1,13 @@
+../Middlewares/ST/guix/common/src/gx_touch_driver_generic_resistive.c:84:13:_gx_touch_driver_generic_resistive_pen_down_event_send	1
+../Middlewares/ST/guix/common/src/gx_touch_driver_generic_resistive.c:143:13:_gx_touch_driver_generic_resistive_pen_drag_event_send	3
+../Middlewares/ST/guix/common/src/gx_touch_driver_generic_resistive.c:204:13:_gx_touch_driver_generic_resistive_pen_up_event_send	1
+../Middlewares/ST/guix/common/src/gx_touch_driver_generic_resistive.c:261:13:_gx_touch_driver_generic_resistive_coord_calculate	2
+../Middlewares/ST/guix/common/src/gx_touch_driver_generic_resistive.c:331:6:_gx_touch_driver_generic_resistive_setup	1
+../Middlewares/ST/guix/common/src/gx_touch_driver_generic_resistive.c:380:13:_gx_touch_driver_generic_resistive_calibration_matrix_set	2
+../Middlewares/ST/guix/common/src/gx_touch_driver_generic_resistive.c:465:16:_gx_touch_driver_generic_resistive_raw_read	9
+../Middlewares/ST/guix/common/src/gx_touch_driver_generic_resistive.c:583:16:_gx_touch_driver_generic_resistive_sample_read	4
+../Middlewares/ST/guix/common/src/gx_touch_driver_generic_resistive.c:636:16:_gx_touch_driver_generic_resistive_coordinate_update	3
+../Middlewares/ST/guix/common/src/gx_touch_driver_generic_resistive.c:701:6:_gx_touch_driver_generic_resistive_update	5
+../Middlewares/ST/guix/common/src/gx_touch_driver_generic_resistive.c:768:13:_gx_touch_driver_generic_resistive_wait_for_touch	2
+../Middlewares/ST/guix/common/src/gx_touch_driver_generic_resistive.c:818:13:_gx_touch_driver_generic_resistive_wait_for_no_touch	2
+../Middlewares/ST/guix/common/src/gx_touch_driver_generic_resistive.c:876:6:_gx_touch_driver_generic_resistive_calibrate	11

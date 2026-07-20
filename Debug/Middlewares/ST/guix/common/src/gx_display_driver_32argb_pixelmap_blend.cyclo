@@ -1,0 +1,3 @@
+../Middlewares/ST/guix/common/src/gx_display_driver_32argb_pixelmap_blend.c:79:13:_gx_display_driver_32argb_pixelmap_raw_blend	3
+../Middlewares/ST/guix/common/src/gx_display_driver_32argb_pixelmap_blend.c:159:13:_gx_display_driver_32argb_pixelmap_alpha_blend	3
+../Middlewares/ST/guix/common/src/gx_display_driver_32argb_pixelmap_blend.c:233:6:_gx_display_driver_32argb_pixelmap_blend	5

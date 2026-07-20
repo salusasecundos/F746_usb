@@ -1,0 +1,8 @@
+../Core/Src/app_threadx.c:86:6:App_ThreadX_Init	5
+../Core/Src/app_threadx.c:139:6:MX_ThreadX_Init	1
+../Core/Src/app_threadx.c:154:13:Debug_Heartbeat_Thread	4
+../Core/Src/app_threadx.c:211:6:App_Diagnostics_Snapshot_Get	15
+../Core/Src/app_threadx.c:335:13:App_Diagnostics_Append_Text	3
+../Core/Src/app_threadx.c:346:13:App_Diagnostics_Append_U32	5
+../Core/Src/app_threadx.c:366:13:App_Diagnostics_Log_Pair	1
+../Core/Src/app_threadx.c:380:13:App_Diagnostics_Log	4

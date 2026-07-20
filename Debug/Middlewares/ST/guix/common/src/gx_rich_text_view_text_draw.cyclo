@@ -1,0 +1,2 @@
+../Middlewares/ST/guix/common/src/gx_rich_text_view_text_draw.c:85:13:_gx_rich_text_view_single_line_draw	18
+../Middlewares/ST/guix/common/src/gx_rich_text_view_text_draw.c:311:7:_gx_rich_text_view_text_draw	12

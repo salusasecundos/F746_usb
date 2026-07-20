@@ -1,0 +1,15 @@
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_rotated_pixelmap_draw.c:73:13:_gx_display_driver_32bpp_rotated_pixelmap_raw_write	4
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_rotated_pixelmap_draw.c:174:13:_gx_display_driver_32bpp_rotated_pixelmap_alpha_write	8
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_rotated_pixelmap_draw.c:284:13:_gx_display_driver_32bpp_rotated_pixelmap_compressed_write	24
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_rotated_pixelmap_draw.c:486:13:_gx_display_driver_32bpp_rotated_pixelmap_compressed_alpha_write	17
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_rotated_pixelmap_draw.c:665:13:_gx_display_driver_32bpp_rotated_palette_pixelmap_compressed_write	24
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_rotated_pixelmap_draw.c:866:13:_gx_display_driver_32bpp_rotated_palette_pixelmap_write	4
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_rotated_pixelmap_draw.c:967:13:_gx_display_driver_32bpp_rotated_palette_pixelmap_transparent_write	5
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_rotated_pixelmap_draw.c:1067:13:_gx_display_driver_32bpp_rotated_palette_pixelmap_transparent_compressed_write	27
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_rotated_pixelmap_draw.c:1278:13:_gx_display_driver_32bpp_rotated_565rgb_pixelmap_raw_write	4
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_rotated_pixelmap_draw.c:1382:13:_gx_display_driver_32bpp_rotated_565rgb_pixelmap_compressed_write	24
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_rotated_pixelmap_draw.c:1598:13:_gx_display_driver_32bpp_rotated_565rgb_pixelmap_compressed_alpha_write	30
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_rotated_pixelmap_draw.c:1867:13:_gx_display_driver_32bpp_rotated_565rgb_pixelmap_alpha_write	8
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_rotated_pixelmap_draw.c:1992:13:_gx_display_driver_32bpp_rotated_4444argb_pixelmap_alpha_write	8
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_rotated_pixelmap_draw.c:2109:13:_gx_display_driver_32bpp_rotated_4444argb_pixelmap_compressed_alpha_write	23
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_rotated_pixelmap_draw.c:2349:6:_gx_display_driver_32bpp_rotated_pixelmap_draw	26

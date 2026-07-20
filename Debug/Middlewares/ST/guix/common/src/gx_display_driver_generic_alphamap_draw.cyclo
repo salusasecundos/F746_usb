@@ -1,0 +1,5 @@
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_alphamap_draw.c:78:14:_gx_display_driver_generic_alphamap_raw_alpha_draw	4
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_alphamap_draw.c:165:14:_gx_display_driver_generic_alphamap_compressed_alpha_draw	14
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_alphamap_draw.c:311:14:_gx_display_driver_generic_alphamap_raw_draw	4
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_alphamap_draw.c:395:14:_gx_display_driver_generic_alphamap_compressed_draw	14
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_alphamap_draw.c:548:7:_gx_display_driver_generic_alphamap_draw	5

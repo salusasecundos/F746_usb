@@ -1,0 +1,3 @@
+../Middlewares/ST/guix/common/src/gx_display_driver_1555xrgb_pixelmap_rotate.c:93:13:_gx_display_driver_1555xrgb_pixelmap_raw_rotate	21
+../Middlewares/ST/guix/common/src/gx_display_driver_1555xrgb_pixelmap_rotate.c:346:13:_gx_display_driver_1555xrgb_pixelmap_alpha_rotate	24
+../Middlewares/ST/guix/common/src/gx_display_driver_1555xrgb_pixelmap_rotate.c:630:6:_gx_display_driver_1555xrgb_pixelmap_rotate	5

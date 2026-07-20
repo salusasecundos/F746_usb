@@ -1,0 +1,8 @@
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_polygon_fill.c:79:13:_gx_display_driver_polygon_min_max_get	5
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_polygon_fill.c:156:13:_gx_display_driver_polygon_new_edge_table_init	11
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_polygon_fill.c:286:13:_gx_display_driver_polygon_active_edge_insert	5
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_polygon_fill.c:354:13:_gx_display_driver_polygon_non_active_edge_remove	4
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_polygon_fill.c:420:13:_gx_display_driver_polygon_scan_line_draw	11
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_polygon_fill.c:520:13:_gx_display_driver_polygon_pixelmap_scan_line_draw	12
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_polygon_fill.c:631:13:_gx_display_driver_polygon_active_edge_table_update_and_restore	7
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_polygon_fill.c:714:6:_gx_display_driver_generic_polygon_fill	16

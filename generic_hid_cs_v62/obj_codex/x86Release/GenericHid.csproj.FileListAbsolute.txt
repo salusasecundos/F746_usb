@@ -1,0 +1,11 @@
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\bin\USBMonitorFixed\GenericHid.exe.config
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\bin\USBMonitorFixed\GenericHid.exe
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\bin\USBMonitorFixed\GenericHid.pdb
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\bin\USBMonitorFixed\System.Runtime.InteropServices.RuntimeInformation.dll
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\obj_codex\x86Release\GenericHid.csprojResolveAssemblyReference.cache
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\obj_codex\x86Release\GenericHid.FrmMain.resources
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\obj_codex\x86Release\GenericHid.FrmMonitor.resources
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\obj_codex\x86Release\GenericHid.Properties.Resources.resources
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\obj_codex\x86Release\GenericHid.csproj.GenerateResource.Cache
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\obj_codex\x86Release\GenericHid.exe
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\obj_codex\x86Release\GenericHid.pdb

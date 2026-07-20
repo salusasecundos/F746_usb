@@ -1,0 +1,2 @@
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_wide_arc_draw.c:82:13:_gx_display_driver_generic_simple_wide_arc_draw	74
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_wide_arc_draw.c:512:6:_gx_display_driver_generic_wide_arc_draw	11

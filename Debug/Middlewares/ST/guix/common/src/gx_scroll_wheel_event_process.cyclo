@@ -1,0 +1,4 @@
+../Middlewares/ST/guix/common/src/gx_scroll_wheel_event_process.c:84:13:_gx_scroll_wheel_timer_event_handler	21
+../Middlewares/ST/guix/common/src/gx_scroll_wheel_event_process.c:241:13:_gx_scroll_wheel_flick_event_handler	18
+../Middlewares/ST/guix/common/src/gx_scroll_wheel_event_process.c:386:13:_gx_scroll_wheel_pen_up_event_handler	4
+../Middlewares/ST/guix/common/src/gx_scroll_wheel_event_process.c:477:6:_gx_scroll_wheel_event_process	12

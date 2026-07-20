@@ -1,0 +1,3 @@
+../Middlewares/ST/guix/common/src/gx_multi_line_text_input_event_process.c:89:13:_gx_multi_line_text_input_pen_down_process	4
+../Middlewares/ST/guix/common/src/gx_multi_line_text_input_event_process.c:197:13:_gx_multi_line_text_input_pen_drag_process	15
+../Middlewares/ST/guix/common/src/gx_multi_line_text_input_event_process.c:366:7:_gx_multi_line_text_input_event_process	43

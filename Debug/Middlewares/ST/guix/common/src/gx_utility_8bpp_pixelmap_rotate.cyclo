@@ -1,0 +1,3 @@
+../Middlewares/ST/guix/common/src/gx_utility_8bpp_pixelmap_rotate.c:82:6:_gx_utility_8bpp_pixelmap_rotate	11
+../Middlewares/ST/guix/common/src/gx_utility_8bpp_pixelmap_rotate.c:247:6:_gx_utility_8bpp_pixelmap_simple_rotate	16
+../Middlewares/ST/guix/common/src/gx_utility_8bpp_pixelmap_rotate.c:402:6:_gx_utility_8bit_alphamap_rotate	21

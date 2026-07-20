@@ -1,0 +1,9 @@
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_rotated_polygon_fill.c:76:13:_gx_display_driver_polygon_min_max_get	5
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_rotated_polygon_fill.c:151:13:_gx_display_driver_polygon_new_edge_table_init_90	10
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_rotated_polygon_fill.c:269:13:_gx_display_driver_polygon_new_edge_table_init_270	10
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_rotated_polygon_fill.c:387:13:_gx_display_driver_polygon_active_edge_insert	5
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_rotated_polygon_fill.c:453:13:_gx_display_driver_polygon_non_active_edge_remove	4
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_rotated_polygon_fill.c:517:13:_gx_display_driver_polygon_scan_line_draw	10
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_rotated_polygon_fill.c:619:13:_gx_display_driver_polygon_pixelmap_scan_line_draw	11
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_rotated_polygon_fill.c:734:13:_gx_display_driver_polygon_active_edge_table_update_and_restore	7
+../Middlewares/ST/guix/common/src/gx_display_driver_generic_rotated_polygon_fill.c:815:6:_gx_display_driver_generic_rotated_polygon_fill	16

@@ -1,0 +1,3 @@
+../Middlewares/ST/guix/common/src/gx_tree_view_draw.c:85:13:_gx_tree_view_root_draw_helper	16
+../Middlewares/ST/guix/common/src/gx_tree_view_draw.c:265:13:_gx_tree_view_root_draw	9
+../Middlewares/ST/guix/common/src/gx_tree_view_draw.c:371:7:_gx_tree_view_draw	1

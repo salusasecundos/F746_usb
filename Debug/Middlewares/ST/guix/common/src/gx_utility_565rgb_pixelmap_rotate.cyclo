@@ -1,0 +1,6 @@
+../Middlewares/ST/guix/common/src/gx_utility_565rgb_pixelmap_rotate.c:91:13:_gx_utility_565rgb_pixelmap_raw_rotate	24
+../Middlewares/ST/guix/common/src/gx_utility_565rgb_pixelmap_rotate.c:374:13:_gx_utility_565rgb_pixelmap_alpha_rotate	27
+../Middlewares/ST/guix/common/src/gx_utility_565rgb_pixelmap_rotate.c:692:13:_gx_utility_565rgb_pixelmap_simple_raw_rotate	16
+../Middlewares/ST/guix/common/src/gx_utility_565rgb_pixelmap_rotate.c:849:13:_gx_utility_565rgb_pixelmap_simple_alpha_rotate	17
+../Middlewares/ST/guix/common/src/gx_utility_565rgb_pixelmap_rotate.c:1041:6:_gx_utility_565rgb_pixelmap_rotate	2
+../Middlewares/ST/guix/common/src/gx_utility_565rgb_pixelmap_rotate.c:1112:6:_gx_utility_565rgb_pixelmap_simple_rotate	2

@@ -1,0 +1,2 @@
+../Middlewares/ST/guix/common/src/gx_widget_last_client_child_get.c:75:12:_gx_widget_last_client_child_get	3
+../Middlewares/ST/guix/common/src/gx_widget_last_client_child_get.c:123:12:_gx_widget_last_visible_client_child_get	4

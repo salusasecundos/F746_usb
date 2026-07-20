@@ -1,0 +1,2 @@
+../Middlewares/ST/guix/common/src/gx_system_version_string_get.c:72:7:_gx_system_version_string_get	1
+../Middlewares/ST/guix/common/src/gx_system_version_string_get.c:119:7:_gx_system_version_string_get_ext	2

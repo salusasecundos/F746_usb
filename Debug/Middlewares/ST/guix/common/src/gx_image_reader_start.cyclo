@@ -1,0 +1,4 @@
+../Middlewares/ST/guix/common/src/gx_image_reader_start.c:74:6:_gx_image_reader_rgb2gray	1
+../Middlewares/ST/guix/common/src/gx_image_reader_start.c:122:13:_gx_image_reader_gray_threshold_calculate	7
+../Middlewares/ST/guix/common/src/gx_image_reader_start.c:209:13:_gx_image_reader_pixelmap_info_set	13
+../Middlewares/ST/guix/common/src/gx_image_reader_start.c:345:6:_gx_image_reader_start	22

@@ -1,0 +1,3 @@
+../AZURE_RTOS/App/app_azure_rtos.c:105:6:tx_application_define	13
+../AZURE_RTOS/App/app_azure_rtos.c:242:13:NetX_Init_Thread	2
+../AZURE_RTOS/App/app_azure_rtos.c:260:13:USBX_Init_Thread	2

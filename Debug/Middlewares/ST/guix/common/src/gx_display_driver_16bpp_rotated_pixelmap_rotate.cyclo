@@ -1,0 +1,5 @@
+../Middlewares/ST/guix/common/src/gx_display_driver_16bpp_rotated_pixelmap_rotate.c:89:13:_gx_display_driver_565rgb_rotated_pixelmap_raw_rotate	21
+../Middlewares/ST/guix/common/src/gx_display_driver_16bpp_rotated_pixelmap_rotate.c:363:13:_gx_display_driver_565rgb_rotated_pixelmap_alpha_rotate	24
+../Middlewares/ST/guix/common/src/gx_display_driver_16bpp_rotated_pixelmap_rotate.c:668:13:_gx_display_driver_16bpp_rotated_pixelmap_simple_rotate	10
+../Middlewares/ST/guix/common/src/gx_display_driver_16bpp_rotated_pixelmap_rotate.c:840:13:_gx_display_driver_565rgb_rotated_pixelmap_simple_alpha_rotate	10
+../Middlewares/ST/guix/common/src/gx_display_driver_16bpp_rotated_pixelmap_rotate.c:1004:6:_gx_display_driver_565rgb_rotated_pixelmap_rotate	5

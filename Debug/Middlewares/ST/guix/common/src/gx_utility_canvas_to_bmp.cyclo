@@ -1,0 +1,7 @@
+../Middlewares/ST/guix/common/src/gx_utility_canvas_to_bmp.c:97:13:_gx_utility_write_bitmap_header	24
+../Middlewares/ST/guix/common/src/gx_utility_canvas_to_bmp.c:340:13:_gx_utility_write_bitmap_data_32bpp	3
+../Middlewares/ST/guix/common/src/gx_utility_canvas_to_bmp.c:404:13:_gx_utility_write_bitmap_data_16bpp	4
+../Middlewares/ST/guix/common/src/gx_utility_canvas_to_bmp.c:475:13:_gx_utility_write_bitmap_data_8bpp	5
+../Middlewares/ST/guix/common/src/gx_utility_canvas_to_bmp.c:553:13:_gx_utility_write_bitmap_data_4bpp	9
+../Middlewares/ST/guix/common/src/gx_utility_canvas_to_bmp.c:660:13:_gx_utility_write_bitmap_data_monochrome	9
+../Middlewares/ST/guix/common/src/gx_utility_canvas_to_bmp.c:781:6:_gx_utility_canvas_to_bmp	8

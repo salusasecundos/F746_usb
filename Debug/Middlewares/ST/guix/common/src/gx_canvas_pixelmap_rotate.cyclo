@@ -1,0 +1,2 @@
+../Middlewares/ST/guix/common/src/gx_canvas_pixelmap_rotate.c:76:14:_gx_canvas_rotated_pixelmap_bound_calculate	6
+../Middlewares/ST/guix/common/src/gx_canvas_pixelmap_rotate.c:225:7:_gx_canvas_pixelmap_rotate	12

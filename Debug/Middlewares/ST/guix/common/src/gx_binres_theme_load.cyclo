@@ -1,0 +1,16 @@
+../Middlewares/ST/guix/common/src/gx_binres_theme_load.c:79:13:_gx_binres_theme_header_load	1
+../Middlewares/ST/guix/common/src/gx_binres_theme_load.c:238:13:_gx_binres_color_header_load	1
+../Middlewares/ST/guix/common/src/gx_binres_theme_load.c:295:13:_gx_binres_palette_header_load	1
+../Middlewares/ST/guix/common/src/gx_binres_theme_load.c:352:13:_gx_binres_font_header_load	1
+../Middlewares/ST/guix/common/src/gx_binres_theme_load.c:421:13:_gx_binres_page_header_load	1
+../Middlewares/ST/guix/common/src/gx_binres_theme_load.c:507:13:_gx_binres_glyph_header_load	1
+../Middlewares/ST/guix/common/src/gx_binres_theme_load.c:644:13:_gx_binres_pixelmap_header_load	1
+../Middlewares/ST/guix/common/src/gx_binres_theme_load.c:735:13:_gx_binres_theme_buffer_allocate	19
+../Middlewares/ST/guix/common/src/gx_binres_theme_load.c:947:13:_gx_binres_glyphs_address_get	4
+../Middlewares/ST/guix/common/src/gx_binres_theme_load.c:1136:13:_gx_binres_compressed_glyphs_address_get	4
+../Middlewares/ST/guix/common/src/gx_binres_theme_load.c:1226:13:_gx_binres_font_load	6
+../Middlewares/ST/guix/common/src/gx_binres_theme_load.c:1337:13:_gx_binres_color_table_load	3
+../Middlewares/ST/guix/common/src/gx_binres_theme_load.c:1406:13:_gx_binres_palette_table_load	3
+../Middlewares/ST/guix/common/src/gx_binres_theme_load.c:1476:13:_gx_binres_font_table_load	11
+../Middlewares/ST/guix/common/src/gx_binres_theme_load.c:1596:13:_gx_binres_pixelmap_table_load	11
+../Middlewares/ST/guix/common/src/gx_binres_theme_load.c:1758:6:_gx_binres_theme_load	11

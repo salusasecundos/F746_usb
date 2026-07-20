@@ -1,0 +1,4 @@
+../Middlewares/ST/guix/common/src/gx_image_reader_colorspace_convert.c:77:13:_gx_image_reader_one_row_dither	11
+../Middlewares/ST/guix/common/src/gx_image_reader_colorspace_convert.c:250:13:_gx_image_reader_one_row_convert	2
+../Middlewares/ST/guix/common/src/gx_image_reader_colorspace_convert.c:305:13:_gx_image_reader_one_row_rotated_convert	2
+../Middlewares/ST/guix/common/src/gx_image_reader_colorspace_convert.c:368:6:_gx_image_reader_colorspace_convert	12

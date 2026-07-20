@@ -1,0 +1,2 @@
+../Middlewares/ST/guix/common/src/gx_circular_gauge_needle_rotate.c:75:7:_gx_circular_gauge_needle_rotate	3
+../Middlewares/ST/guix/common/src/gx_circular_gauge_needle_rotate.c:116:7:_gx_circular_gauge_needle_rotate_callback	1

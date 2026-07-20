@@ -1,0 +1,8 @@
+../Middlewares/ST/guix/common/src/gx_display_driver_24xrgb_pixelmap_blend.c:78:13:_gx_display_driver_24xrgb_pixelmap_raw_blend	3
+../Middlewares/ST/guix/common/src/gx_display_driver_24xrgb_pixelmap_blend.c:154:13:_gx_display_driver_24xrgb_pixelmap_alpha_blend	5
+../Middlewares/ST/guix/common/src/gx_display_driver_24xrgb_pixelmap_blend.c:245:13:_gx_display_driver_24xrgb_palette_pixelmap_blend	3
+../Middlewares/ST/guix/common/src/gx_display_driver_24xrgb_pixelmap_blend.c:334:13:_gx_display_driver_24xrgb_palette_pixelmap_transparent_blend	4
+../Middlewares/ST/guix/common/src/gx_display_driver_24xrgb_pixelmap_blend.c:420:13:_gx_display_driver_24xrgb_4444argb_pixelmap_alpha_blend	4
+../Middlewares/ST/guix/common/src/gx_display_driver_24xrgb_pixelmap_blend.c:507:13:_gx_display_driver_24xrgb_565rgb_pixelmap_alpha_blend	4
+../Middlewares/ST/guix/common/src/gx_display_driver_24xrgb_pixelmap_blend.c:603:13:_gx_display_driver_24xrgb_565rgb_pixelmap_raw_blend	3
+../Middlewares/ST/guix/common/src/gx_display_driver_24xrgb_pixelmap_blend.c:690:6:_gx_display_driver_24xrgb_pixelmap_blend	9

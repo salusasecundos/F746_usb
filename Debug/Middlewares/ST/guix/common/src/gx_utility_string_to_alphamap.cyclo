@@ -1,0 +1,6 @@
+../Middlewares/ST/guix/common/src/gx_utility_string_to_alphamap.c:93:6:_gx_utility_string_to_alphamap	2
+../Middlewares/ST/guix/common/src/gx_utility_string_to_alphamap.c:162:6:_gx_utility_string_to_alphamap_ext	15
+../Middlewares/ST/guix/common/src/gx_utility_string_to_alphamap.c:305:6:_gx_utility_glyph_8bpp_to_alphamap_draw	5
+../Middlewares/ST/guix/common/src/gx_utility_string_to_alphamap.c:409:6:_gx_utility_glyph_4bpp_to_alphamap_draw	6
+../Middlewares/ST/guix/common/src/gx_utility_string_to_alphamap.c:649:6:_gx_utility_glyph_1bpp_to_alphamap_draw	24
+../Middlewares/ST/guix/common/src/gx_utility_string_to_alphamap.c:989:6:_gx_utility_string_to_alphamap_draw	15

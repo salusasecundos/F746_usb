@@ -1,0 +1,7 @@
+../Middlewares/ST/guix/common/src/gx_text_scroll_wheel_draw.c:99:14:_gx_text_scroll_wheel_round_text_draw	11
+../Middlewares/ST/guix/common/src/gx_text_scroll_wheel_draw.c:234:14:_gx_text_scroll_wheel_flat_text_draw	6
+../Middlewares/ST/guix/common/src/gx_text_scroll_wheel_draw.c:328:13:_gx_text_scroll_wheel_row_draw	8
+../Middlewares/ST/guix/common/src/gx_text_scroll_wheel_draw.c:437:13:_gx_text_scroll_wheel_text_get	4
+../Middlewares/ST/guix/common/src/gx_text_scroll_wheel_draw.c:561:13:_gx_text_scroll_wheel_round_draw	30
+../Middlewares/ST/guix/common/src/gx_text_scroll_wheel_draw.c:758:13:_gx_text_scroll_wheel_flat_draw	10
+../Middlewares/ST/guix/common/src/gx_text_scroll_wheel_draw.c:901:6:_gx_text_scroll_wheel_draw	5

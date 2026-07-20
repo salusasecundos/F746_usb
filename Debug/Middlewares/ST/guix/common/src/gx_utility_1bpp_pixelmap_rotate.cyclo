@@ -1,0 +1,4 @@
+../Middlewares/ST/guix/common/src/gx_utility_1bpp_pixelmap_rotate.c:82:6:_gx_utility_1bpp_pixelmap_rotate	16
+../Middlewares/ST/guix/common/src/gx_utility_1bpp_pixelmap_rotate.c:284:13:_gx_utility_1bpp_pixelmap_simple_raw_rotate	23
+../Middlewares/ST/guix/common/src/gx_utility_1bpp_pixelmap_rotate.c:502:13:_gx_utility_1bpp_pixelmap_simple_transparent_rotate	26
+../Middlewares/ST/guix/common/src/gx_utility_1bpp_pixelmap_rotate.c:750:6:_gx_utility_1bpp_pixelmap_simple_rotate	2

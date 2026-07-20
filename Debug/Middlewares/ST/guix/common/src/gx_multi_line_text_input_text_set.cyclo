@@ -1,0 +1,3 @@
+../Middlewares/ST/guix/common/src/gx_multi_line_text_input_text_set.c:79:13:_gx_multi_line_text_input_new_line_character_get	5
+../Middlewares/ST/guix/common/src/gx_multi_line_text_input_text_set.c:170:6:_gx_multi_line_text_input_text_set	2
+../Middlewares/ST/guix/common/src/gx_multi_line_text_input_text_set.c:239:6:_gx_multi_line_text_input_text_set_ext	7

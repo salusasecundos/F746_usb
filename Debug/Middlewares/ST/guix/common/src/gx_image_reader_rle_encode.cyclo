@@ -1,0 +1,6 @@
+../Middlewares/ST/guix/common/src/gx_image_reader_rle_encode.c:79:13:_gx_image_reader_rle_count_location_get	8
+../Middlewares/ST/guix/common/src/gx_image_reader_rle_encode.c:172:13:_gx_image_reader_rle_count_write	24
+../Middlewares/ST/guix/common/src/gx_image_reader_rle_encode.c:335:13:_gx_image_reader_rle_duplicates_count	6
+../Middlewares/ST/guix/common/src/gx_image_reader_rle_encode.c:413:13:_gx_image_reader_rle_one_row_encode	9
+../Middlewares/ST/guix/common/src/gx_image_reader_rle_encode.c:531:6:_gx_image_reader_rle_encode_size_get	8
+../Middlewares/ST/guix/common/src/gx_image_reader_rle_encode.c:628:6:_gx_image_reader_rle_encode	5

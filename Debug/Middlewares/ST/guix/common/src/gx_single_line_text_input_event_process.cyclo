@@ -1,0 +1,3 @@
+../Middlewares/ST/guix/common/src/gx_single_line_text_input_event_process.c:83:13:_gx_single_line_text_input_pen_down_process	2
+../Middlewares/ST/guix/common/src/gx_single_line_text_input_event_process.c:162:13:_gx_single_line_text_input_pen_drag_process	11
+../Middlewares/ST/guix/common/src/gx_single_line_text_input_event_process.c:299:7:_gx_single_line_text_input_event_process	40

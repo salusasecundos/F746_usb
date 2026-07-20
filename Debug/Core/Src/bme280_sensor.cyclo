@@ -1,0 +1,15 @@
+../Core/Src/bme280_sensor.c:59:17:get_u16_le	1
+../Core/Src/bme280_sensor.c:64:16:get_s16_le	1
+../Core/Src/bme280_sensor.c:69:16:sign_extend_12	2
+../Core/Src/bme280_sensor.c:78:26:read_registers	1
+../Core/Src/bme280_sensor.c:86:26:write_register	1
+../Core/Src/bme280_sensor.c:94:29:wait_status_clear	4
+../Core/Src/bme280_sensor.c:116:29:read_calibration	7
+../Core/Src/bme280_sensor.c:162:16:compensate_temperature	9
+../Core/Src/bme280_sensor.c:190:17:compensate_pressure	13
+../Core/Src/bme280_sensor.c:233:17:compensate_humidity	14
+../Core/Src/bme280_sensor.c:272:22:BME280_Sensor_Init	13
+../Core/Src/bme280_sensor.c:356:22:BME280_Sensor_Read	10
+../Core/Src/bme280_sensor.c:422:9:BME280_Sensor_GetAddress	1
+../Core/Src/bme280_sensor.c:427:9:BME280_Sensor_GetChipId	1
+../Core/Src/bme280_sensor.c:432:9:BME280_Sensor_IsInitialized	1

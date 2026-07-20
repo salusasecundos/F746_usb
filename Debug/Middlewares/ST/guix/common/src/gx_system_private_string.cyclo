@@ -1,0 +1,5 @@
+../Middlewares/ST/guix/common/src/gx_system_private_string.c:74:6:_gx_system_private_string_copy	13
+../Middlewares/ST/guix/common/src/gx_system_private_string.c:225:6:_gx_system_private_string_list_copy	19
+../Middlewares/ST/guix/common/src/gx_system_private_string.c:399:6:_gx_system_private_string_list_copy_ext	16
+../Middlewares/ST/guix/common/src/gx_system_private_string.c:541:6:_gx_system_private_string_get	3
+../Middlewares/ST/guix/common/src/gx_system_private_string.c:614:6:_gx_system_private_string_list_get	2

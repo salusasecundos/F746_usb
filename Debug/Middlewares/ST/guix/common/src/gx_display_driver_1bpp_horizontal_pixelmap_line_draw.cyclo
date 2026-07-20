@@ -1,0 +1,5 @@
+../Middlewares/ST/guix/common/src/gx_display_driver_1bpp_horizontal_pixelmap_line_draw.c:76:13:_gx_display_driver_1bpp_horizontal_pixelmap_line_raw_write	7
+../Middlewares/ST/guix/common/src/gx_display_driver_1bpp_horizontal_pixelmap_line_draw.c:187:13:_gx_display_driver_1bpp_horizontal_pixelmap_line_transparent_write	8
+../Middlewares/ST/guix/common/src/gx_display_driver_1bpp_horizontal_pixelmap_line_draw.c:301:13:_gx_display_driver_1bpp_horizontal_pixelmap_line_compressed_write	18
+../Middlewares/ST/guix/common/src/gx_display_driver_1bpp_horizontal_pixelmap_line_draw.c:464:13:_gx_display_driver_1bpp_horizontal_pixelmap_line_compressed_transparent_write	20
+../Middlewares/ST/guix/common/src/gx_display_driver_1bpp_horizontal_pixelmap_line_draw.c:642:6:_gx_display_driver_1bpp_horizontal_pixelmap_line_draw	6

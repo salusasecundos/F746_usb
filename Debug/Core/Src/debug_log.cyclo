@@ -1,0 +1,11 @@
+../Core/Src/debug_log.c:11:13:debug_put_char	5
+../Core/Src/debug_log.c:31:6:Debug_Log_Init	1
+../Core/Src/debug_log.c:64:6:Debug_Log_Write	4
+../Core/Src/debug_log.c:81:6:Debug_Log_Line	1
+../Core/Src/debug_log.c:87:6:Debug_Log_U32	4
+../Core/Src/debug_log.c:106:6:Debug_Log_I32	5
+../Core/Src/debug_log.c:137:6:Debug_Log_Hex	2
+../Core/Src/debug_log.c:151:6:Debug_Log_IPv4	6
+../Core/Src/debug_log.c:186:6:Debug_Log_SetStage	2
+../Core/Src/debug_log.c:196:13:Debug_Log_GetStage	1
+../Core/Src/debug_log.c:201:6:Debug_Log_Fault	1

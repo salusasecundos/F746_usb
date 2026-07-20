@@ -1,0 +1,3 @@
+../Middlewares/ST/guix/common/src/gx_utility_1555xrgb_pixelmap_resize.c:90:13:_gx_utility_1555xrgb_pixelmap_raw_resize	9
+../Middlewares/ST/guix/common/src/gx_utility_1555xrgb_pixelmap_resize.c:267:13:_gx_utility_1555xrgb_pixelmap_alpha_resize	11
+../Middlewares/ST/guix/common/src/gx_utility_1555xrgb_pixelmap_resize.c:492:6:_gx_utility_1555xrgb_pixelmap_resize	2

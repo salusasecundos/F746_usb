@@ -1,0 +1,4 @@
+../Middlewares/ST/guix/common/src/gx_radial_slider_event_process.c:85:14:_gx_radial_slider_pen_down_event_process	6
+../Middlewares/ST/guix/common/src/gx_radial_slider_event_process.c:186:14:_gx_radial_slider_pen_drag_event_process	10
+../Middlewares/ST/guix/common/src/gx_radial_slider_event_process.c:291:14:_gx_radial_slider_pen_up_event_process	8
+../Middlewares/ST/guix/common/src/gx_radial_slider_event_process.c:380:7:_gx_radial_slider_event_process	6

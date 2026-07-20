@@ -1,0 +1,3 @@
+../Middlewares/ST/guix/common/src/gx_system_string_width_get.c:75:14:_gx_system_string_width_compressed_font_get	7
+../Middlewares/ST/guix/common/src/gx_system_string_width_get.c:312:7:_gx_system_string_width_get	4
+../Middlewares/ST/guix/common/src/gx_system_string_width_get.c:383:7:_gx_system_string_width_get_ext	11

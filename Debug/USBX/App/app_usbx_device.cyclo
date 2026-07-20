@@ -1,0 +1,6 @@
+../USBX/App/app_usbx_device.c:128:6:MX_USBX_Device_Init	15
+../USBX/App/app_usbx_device.c:282:6:App_USBX_Device_Service	11
+../USBX/App/app_usbx_device.c:340:6:App_USBX_Device_Diagnostics	8
+../USBX/App/app_usbx_device.c:369:13:App_USBX_Device_Change	3
+../USBX/App/app_usbx_device.c:383:17:App_USBX_Get_Clk48_Frequency	5
+../USBX/App/app_usbx_device.c:412:13:App_USBX_Set_Serial	2

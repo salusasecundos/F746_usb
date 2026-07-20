@@ -1,0 +1,5 @@
+../Middlewares/ST/guix/common/src/gx_display_driver_32argb_pixelmap_draw.c:83:13:_gx_display_driver_32argb_pixelmap_alpha_write	4
+../Middlewares/ST/guix/common/src/gx_display_driver_32argb_pixelmap_draw.c:166:13:_gx_display_driver_32argb_pixelmap_compressed_alpha_write	14
+../Middlewares/ST/guix/common/src/gx_display_driver_32argb_pixelmap_draw.c:312:13:_gx_display_driver_32argb_pixelmap_compressed_write	21
+../Middlewares/ST/guix/common/src/gx_display_driver_32argb_pixelmap_draw.c:484:13:_gx_display_driver_32argb_pixelmap_raw_write	3
+../Middlewares/ST/guix/common/src/gx_display_driver_32argb_pixelmap_draw.c:573:6:_gx_display_driver_32argb_pixelmap_draw	10

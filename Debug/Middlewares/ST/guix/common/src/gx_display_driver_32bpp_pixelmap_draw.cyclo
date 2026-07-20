@@ -1,0 +1,15 @@
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_pixelmap_draw.c:74:13:_gx_display_driver_24xrgb_pixelmap_raw_write	3
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_pixelmap_draw.c:163:13:_gx_display_driver_24xrgb_pixelmap_alpha_write	5
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_pixelmap_draw.c:248:13:_gx_display_driver_24xrgb_pixelmap_compressed_write	21
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_pixelmap_draw.c:423:13:_gx_display_driver_24xrgb_pixelmap_compressed_alpha_write	14
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_pixelmap_draw.c:573:13:_gx_display_driver_24xrgb_palette_pixelmap_compressed_write	21
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_pixelmap_draw.c:766:13:_gx_display_driver_24xrgb_palette_pixelmap_write	4
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_pixelmap_draw.c:869:13:_gx_display_driver_24xrgb_palette_pixelmap_transparent_write	5
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_pixelmap_draw.c:961:13:_gx_display_driver_24xrgb_palette_pixelmap_transparent_compressed_write	24
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_pixelmap_draw.c:1160:13:_gx_display_driver_24xrgb_565rgb_pixelmap_raw_write	3
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_pixelmap_draw.c:1246:13:_gx_display_driver_24xrgb_565rgb_pixelmap_compressed_write	21
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_pixelmap_draw.c:1435:13:_gx_display_driver_24xrgb_565rgb_pixelmap_compressed_alpha_write	27
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_pixelmap_draw.c:1678:13:_gx_display_driver_24xrgb_565rgb_pixelmap_alpha_write	5
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_pixelmap_draw.c:1783:13:_gx_display_driver_24xrgb_4444argb_pixelmap_alpha_write	5
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_pixelmap_draw.c:1875:13:_gx_display_driver_24xrgb_4444argb_pixelmap_compressed_alpha_write	20
+../Middlewares/ST/guix/common/src/gx_display_driver_32bpp_pixelmap_draw.c:2115:6:_gx_display_driver_24xrgb_pixelmap_draw	25

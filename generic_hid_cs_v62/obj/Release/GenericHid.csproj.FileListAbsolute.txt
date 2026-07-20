@@ -1,0 +1,17 @@
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\bin\Release\GenericHid.exe.config
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\bin\Release\GenericHid.exe
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\bin\Release\GenericHid.pdb
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\bin\Release\mscorlib.dll
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\bin\Release\System.Runtime.InteropServices.RuntimeInformation.dll
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\bin\Release\normidna.nlp
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\bin\Release\normnfc.nlp
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\bin\Release\normnfd.nlp
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\bin\Release\normnfkc.nlp
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\bin\Release\normnfkd.nlp
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\obj\Release\GenericHid.csprojResolveAssemblyReference.cache
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\obj\Release\GenericHid.FrmMain.resources
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\obj\Release\GenericHid.FrmMonitor.resources
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\obj\Release\GenericHid.Properties.Resources.resources
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\obj\Release\GenericHid.csproj.GenerateResource.Cache
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\obj\Release\GenericHid.exe
+C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\obj\Release\GenericHid.pdb

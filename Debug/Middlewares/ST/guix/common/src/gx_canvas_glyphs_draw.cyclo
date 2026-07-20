@@ -1,0 +1,3 @@
+../Middlewares/ST/guix/common/src/gx_canvas_glyphs_draw.c:265:13:_gx_canvas_compressed_glyphs_draw	16
+../Middlewares/ST/guix/common/src/gx_canvas_glyphs_draw.c:446:13:_gx_canvas_generic_glyphs_draw	16
+../Middlewares/ST/guix/common/src/gx_canvas_glyphs_draw.c:634:6:_gx_canvas_glyphs_draw	4
