@@ -390,9 +390,15 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-  Debug_Log_Line("*** Error_Handler ***");
+  /* HAL error callbacks can fire from interrupt context, and this path is
+     about to halt with interrupts disabled either way, so it deliberately
+     uses the raw, unlocked Debug_Log_Write() instead of Debug_Log_Line():
+     taking the debug log mutex here could be illegal (ISR) or deadlock on
+     a lock a just-interrupted thread still owns. */
+  Debug_Log_Write("*** Error_Handler ***\n");
   Debug_Log_Write("last stage: ");
-  Debug_Log_Line(Debug_Log_GetStage());
+  Debug_Log_Write(Debug_Log_GetStage());
+  Debug_Log_Write("\n");
   __disable_irq();
   while (1)
   {

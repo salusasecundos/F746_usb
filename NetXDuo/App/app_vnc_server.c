@@ -11,6 +11,8 @@
 #define APP_VNC_THREAD_PRIORITY         15U
 #define APP_VNC_ACCEPT_WAIT             (TX_TIMER_TICKS_PER_SECOND / 5U)
 #define APP_VNC_IO_WAIT                 (2U * TX_TIMER_TICKS_PER_SECOND)
+#define APP_VNC_IO_MAX_RETRIES          5U /* ~10 s of no forward progress on
+                                               one field aborts the session */
 #define APP_VNC_POLL_WAIT               ((TX_TIMER_TICKS_PER_SECOND >= 20U) ? \
                                          (TX_TIMER_TICKS_PER_SECOND / 20U) : 1U)
 #define APP_VNC_TX_CHUNK_SIZE           1400U
@@ -19,6 +21,9 @@
 #define APP_VNC_TCP_RETRY_COUNT         3U
 #define APP_VNC_LISTEN_BACKLOG          2U
 #define APP_VNC_DESKTOP_NAME            "STM32F746 GUIX"
+#define APP_VNC_CUT_TEXT_MAX_LENGTH     4096U /* sane cap; real clipboard
+                                                  pastes never need more */
+#define APP_VNC_SOCKET_OPEN_RETRY_WAIT  (TX_TIMER_TICKS_PER_SECOND)
 
 #define RFB_C2S_SET_PIXEL_FORMAT        0U
 #define RFB_C2S_FIX_COLOUR_MAP          1U
@@ -202,6 +207,7 @@ static UINT RFB_Stream_Receive(RFB_STREAM *stream, UCHAR *data, ULONG length)
   ULONG copied;
   ULONG chunk;
   ULONG actual_status;
+  ULONG stall_retries = 0U;
   UINT status;
 
   while (length != 0U)
@@ -211,6 +217,14 @@ static UINT RFB_Stream_Receive(RFB_STREAM *stream, UCHAR *data, ULONG length)
       status = RFB_Stream_Fill(stream, APP_VNC_IO_WAIT);
       if (status == NX_NO_PACKET)
       {
+        /* Bound the retry loop: a client that opens the connection and then
+           trickles bytes (or sends nothing) must not be able to wedge the
+           single-session VNC server forever. */
+        stall_retries++;
+        if (stall_retries > APP_VNC_IO_MAX_RETRIES)
+        {
+          return status;
+        }
         if (nx_ip_status_check(vnc_ip, NX_IP_ADDRESS_RESOLVED,
                                &actual_status, NX_NO_WAIT) == NX_SUCCESS)
         {
@@ -222,6 +236,7 @@ static UINT RFB_Stream_Receive(RFB_STREAM *stream, UCHAR *data, ULONG length)
       {
         return status;
       }
+      stall_retries = 0U;
     }
 
     available = stream->packet_length - stream->packet_offset;
@@ -815,13 +830,24 @@ static UINT RFB_Pointer_Event(RFB_SESSION *session)
 static UINT RFB_Client_Cut_Text(RFB_SESSION *session)
 {
   UCHAR message[7];
+  uint32_t length;
   UINT status = RFB_Stream_Receive(&session->stream, message, sizeof(message));
 
   if (status != NX_SUCCESS)
   {
     return status;
   }
-  return RFB_Stream_Skip(&session->stream, RFB_Get_U32(&message[3]));
+
+  length = RFB_Get_U32(&message[3]);
+  if (length > APP_VNC_CUT_TEXT_MAX_LENGTH)
+  {
+    /* A client-supplied length this large is either malformed or hostile
+       (it would otherwise tie up the single VNC session skipping up to
+       4 GB). Drop the connection instead of trusting it. */
+    Debug_Log_U32("[VNC] ClientCutText length rejected: ", length);
+    return NX_NOT_SUPPORTED;
+  }
+  return RFB_Stream_Skip(&session->stream, length);
 }
 
 static UINT RFB_Process_Client_Message(RFB_SESSION *session)
@@ -1023,11 +1049,17 @@ static VOID App_VNC_Thread(ULONG argument)
   UINT status;
 
   (void)argument;
+
+  /* A transient failure here (e.g. packet-pool pressure while NetX/USBX are
+     still starting up) must not permanently disable the VNC feature for the
+     rest of the device's uptime. Retry until the socket/listen succeeds,
+     mirroring the retry pattern already used by App_VNC_Socket_Reset(). */
   status = App_VNC_Socket_Open();
-  if (status != NX_SUCCESS)
+  while (status != NX_SUCCESS)
   {
-    Debug_Log_U32("[VNC] socket/listen failed: ", status);
-    return;
+    Debug_Log_U32("[VNC] socket/listen failed, retrying: ", status);
+    tx_thread_sleep(APP_VNC_SOCKET_OPEN_RETRY_WAIT);
+    status = App_VNC_Socket_Open();
   }
 
   Debug_Log_U32("[VNC] RFB server port: ", APP_VNC_SERVER_PORT);

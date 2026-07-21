@@ -226,7 +226,10 @@
 
 /* Define the common timer tick reference for use by other middleware components. */
 
-/*#define TX_TIMER_TICKS_PER_SECOND                100*/
+/* 1000 = 1 ms/tick (was 100 = 10 ms/tick). Also requires changing
+   SYSTICK_CYCLES in tx_initialize_low_level.s -- see TICK_RATE.md at the
+   repository root. */
+#define TX_TIMER_TICKS_PER_SECOND                1000
 
 /* Determinate if the basic alignment type is defined. */
 

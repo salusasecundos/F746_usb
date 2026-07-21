@@ -1,15 +1,12 @@
-using Microsoft.Win32.SafeHandles;
 using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Management;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
-//using System.Threading;
 using System.Drawing;
 
 namespace GenericHid
@@ -72,24 +69,23 @@ namespace GenericHid
 	/// reports so the application's main thread doesn't have to wait for the device to retrieve a 
 	/// report when the HID driver's buffer is empty or send a report when the device's endpoint is busy. 
 	/// 
-	/// For code that finds a device and opens handles to it, see the FindTheHid routine in frmMain.cs.
-	/// For code that reads from the device, see GetInputReportViaInterruptTransfer, 
-	/// GetInputReportViaControlTransfer, and GetFeatureReport in Hid.cs.
-	/// For code that writes to the device, see SendInputReportViaInterruptTransfer, 
-	/// SendInputReportViaControlTransfer, and SendFeatureReport in Hid.cs.
-	/// 
+	/// NOTE: the device is now a vendor-specific WinUSB Bulk interface, not a HID-class
+	/// device; the paragraphs above describe the original Microsoft sample this project
+	/// started from. The live communication path is FrmMain.RequestBulkExchange() via
+	/// WinUsbDevice.cs. The legacy HID report-exchange code (FindTheHid and friends) and
+	/// its supporting Hid.cs/HidDeclarations.cs/Debugging.cs/DebuggingDeclarations.cs were
+	/// unreachable dead code and have been removed.
+	///
 	/// This project includes the following modules:
-	/// 
+	///
 	/// GenericHid.cs - runs the application.
 	/// FrmMain.cs - routines specific to the form.
-	/// Hid.cs - routines specific to HID communications.
+	/// WinUsbDevice.cs - WinUSB Bulk transport used to talk to the STM32 device.
+	/// UsbInterfaceDiscovery.cs - locates the device's WinUSB interface GUID.
 	/// DeviceManagement.cs - routine for obtaining a handle to a device from its GUID.
-	/// Debugging.cs - contains a routine for displaying API error messages.
-	/// HidDeclarations.cs - Declarations for API functions used by Hid.cs.
 	/// FileIODeclarations.cs - Declarations for file-related API functions.
 	/// DeviceManagementDeclarations.cs - Declarations for API functions used by DeviceManagement.cs.
-	/// DebuggingDeclarations.cs - Declarations for API functions used by Debugging.cs.
-	/// 
+	///
 	/// Companion device firmware for several device CPUs is available from www.Lvr.com/hidpage.htm
 	/// You can use any generic HID (not a system mouse or keyboard) that sends and receives reports.
 	/// This application will not detect or communicate with non-HID-class devices.
@@ -663,10 +659,6 @@ namespace GenericHid
 
 		private Boolean _deviceDetected;
 		private IntPtr _deviceNotificationHandle;
-		private FileStream _deviceData;
-		private FormActions _formActions;
-		private SafeFileHandle _hidHandle;
-		private String _hidUsage;
 		private ManagementEventWatcher _deviceArrivedWatcher;
 		private Boolean _deviceHandleObtained;
 		private ManagementEventWatcher _deviceRemovedWatcher;
@@ -674,11 +666,7 @@ namespace GenericHid
 		private Int32 _myVendorId;
 		private Boolean _periodicTransfersRequested;
 		private Boolean _reconnectInProgress;
-		private ReportReadOrWritten _readOrWritten;
-		private ReportTypes _reportType;
-		private SendOrGet _sendOrGet;
 		private Boolean _transferInProgress;
-		private TransferTypes _transferType;
 		private FrmMonitor _monitorForm;
 
 		private string _usbDeviceName = "unknown";
@@ -691,39 +679,8 @@ namespace GenericHid
 
 		private static System.Timers.Timer _periodicTransfers;
 
-		private readonly Debugging _myDebugging = new Debugging(); //  For viewing results of API calls via Debug.Write.
 		private readonly DeviceManagement _myDeviceManagement = new DeviceManagement();
 		private readonly WinUsbDevice _bulkDevice = new WinUsbDevice();
-		private Hid _myHid = new Hid();
-
-		private enum FormActions
-		{
-		}
-
-		private enum ReportReadOrWritten
-		{
-			Read,
-			Written
-		}
-
-		private enum ReportTypes
-		{
-			Input,
-			Output,
-			Feature
-		}
-
-		private enum SendOrGet
-		{
-			Send,
-			Get
-		}
-
-		private enum TransferTypes
-		{
-			Control,
-			Interrupt
-		}
 
 		private enum WmiDeviceProperties
 		{
@@ -737,32 +694,6 @@ namespace GenericHid
 		}
 
 		internal FrmMain FrmMy;
-
-		//  This delegate has the same parameters as AccessForm.
-		//  Used in accessing the application's form from a different thread.
-
-		private delegate void MarshalDataToForm(FormActions action, String textToAdd);
-
-		///  <summary>
-		///  Performs various application-specific functions that
-		///  involve accessing the application's form.
-		///  </summary>
-		///  
-		///  <param name="action"> a FormActions member that names the action to perform on the form</param>
-		///  <param name="formText"> text that the form displays or the code uses for 
-		///  another purpose. Actions that don't use text ignore this parameter. </param>
-
-		private void AccessForm(FormActions action, String formText)
-		{
-			try
-			{
-			}
-			catch (Exception ex)
-			{
-				DisplayException(Name, ex);
-				throw;
-			}
-		}
 
 		///  <summary>
 		///  Add a handler to detect arrival of devices using WMI.
@@ -826,24 +757,6 @@ namespace GenericHid
 			try
 			{
 				_bulkDevice.Dispose();
-
-				if (_deviceData != null)
-				{
-					_deviceData.Close();
-					_deviceData.Dispose();
-					_deviceData = null;
-				}
-
-				if (_hidHandle != null)
-				{
-					if (!_hidHandle.IsInvalid && !_hidHandle.IsClosed)
-					{
-						_hidHandle.Close();
-					}
-
-					_hidHandle.Dispose();
-					_hidHandle = null;
-				}
 			}
 			catch (Exception ex)
 			{
@@ -1009,28 +922,6 @@ namespace GenericHid
 		}
         /////////////////////////////////////////////////////////////////////////////////////////////////////////
         ///  <summary>
-        ///  Displays received or written report data.
-        ///  </summary>
-        ///  
-        ///  <param name="buffer"> contains the report data. </param>			
-        ///  <param name="currentReportType" > "Input", "Output", or "Feature"</param>
-        ///  <param name="currentReadOrWritten" > "read" for Input and IN Feature reports, "written" for Output and OUT Feature reports.</param>
-
-        private void DisplayReportData(Byte[] buffer, ReportTypes currentReportType, ReportReadOrWritten currentReadOrWritten)
-		{
-		}
-
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////
-        ///  <summary>
-        ///  Display a message if the user clicks a button when a transfer is in progress.
-        ///  </summary>
-        /// 
-        private void DisplayTransferInProgressMessage()
-		{
-			AddUsbEvent("Command not executed because a transfer is in progress");
-		}
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////
-        ///  <summary>
         ///  Do periodic transfers.
         ///  </summary>
         /// <param name="source"></param>
@@ -1133,174 +1024,6 @@ namespace GenericHid
 				throw;
 			}
 		}
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////
-        ///  <summary>
-        ///  Call HID functions that use Win32 API functions to locate a HID-class device
-        ///  by its Vendor ID and Product ID. Open a handle to the device.
-        ///  </summary>
-        ///          
-        ///  <returns>
-        ///   True if the device is detected, False if not detected.
-        ///  </returns>
-
-        private Boolean FindTheHid()
-		{
-			var devicePathName = new String[128];
-			String myDevicePathName = "";
-
-			try
-			{
-				_deviceHandleObtained = false;
-				CloseCommunications();
-
-				//  Get the device's Vendor ID and Product ID from the form's text boxes.
-
-//				GetVendorAndProductIDsFromTextBoxes(ref _myVendorId, ref _myProductId);
-
-				// Get the HID-class GUID.
-
-				Guid hidGuid = _myHid.GetHidGuid();
-
-				String functionName = "GetHidGuid";
-				Debug.WriteLine(_myDebugging.ResultOfApiCall(functionName));
-				Debug.WriteLine("  GUID for system HIDs: " + hidGuid.ToString());
-
-				//  Fill an array with the device path names of all attached HIDs.
-
-				Boolean availableHids = _myDeviceManagement.FindDeviceFromGuid(hidGuid, ref devicePathName);
-
-				//  If there is at least one HID, attempt to read the Vendor ID and Product ID
-				//  of each device until there is a match or all devices have been examined.
-
-				if (availableHids)
-				{
-					Int32 memberIndex = 0;
-
-					do
-					{
-						// Open the handle without read/write access to enable getting information about any HID, even system keyboards and mice.
-
-						_hidHandle = _myHid.OpenHandle(devicePathName[memberIndex], false);
-
-						functionName = "CreateFile";
-						Debug.WriteLine(_myDebugging.ResultOfApiCall(functionName));
-						Debug.WriteLine("  Returned handle: " + _hidHandle);
-
-						if (!_hidHandle.IsInvalid)
-						{
-							// The returned handle is valid, 
-							// so find out if this is the device we're looking for.
-
-							_myHid.DeviceAttributes.Size = Marshal.SizeOf(_myHid.DeviceAttributes);
-
-							Boolean success = _myHid.GetAttributes(_hidHandle, ref _myHid.DeviceAttributes);
-
-							if (success)
-							{
-								Debug.WriteLine("  HIDD_ATTRIBUTES structure filled without error.");
-								Debug.WriteLine("  Structure size: " + _myHid.DeviceAttributes.Size);
-								Debug.WriteLine("  Vendor ID: " + Convert.ToString(_myHid.DeviceAttributes.VendorID, 16));
-								Debug.WriteLine("  Product ID: " + Convert.ToString(_myHid.DeviceAttributes.ProductID, 16));
-								Debug.WriteLine("  Version Number: " + Convert.ToString(_myHid.DeviceAttributes.VersionNumber, 16));
-
-								if ((_myHid.DeviceAttributes.VendorID == _myVendorId) && (_myHid.DeviceAttributes.ProductID == _myProductId))
-								{
-									Debug.WriteLine("  Handle obtained to my device");
-
-									//  Display the information in form's list box.
-									AddUsbEvent("HID handle opened, VID=" +	_myVendorId.ToString("X4") + " PID=" + _myProductId.ToString("X4"));
-									_deviceHandleObtained = true;
-									SetUsbStatus("USB device connected", "VID: " + _myVendorId.ToString("X4") + "  PID: " + _myProductId.ToString("X4"), Color.LimeGreen );
-									myDevicePathName = devicePathName[memberIndex];
-								}
-								else
-								{
-									//  It's not a match, so close the handle.
-
-									_deviceHandleObtained = false;
-									_hidHandle.Close();
-								}
-							}
-							else
-							{
-								//  There was a problem retrieving the information.
-
-								Debug.WriteLine("  Error in filling HIDD_ATTRIBUTES structure.");
-								_deviceHandleObtained = false;
-								_hidHandle.Close();
-							}
-						}
-
-						//  Keep looking until we find the device or there are no devices left to examine.
-
-						memberIndex = memberIndex + 1;
-					}
-					while (!((_deviceHandleObtained || (memberIndex == devicePathName.Length))));
-				}
-
-				if (_deviceHandleObtained)
-				{
-					//  The device was detected. Learn the capabilities of the device.
-
-					_myHid.Capabilities = _myHid.GetDeviceCapabilities(_hidHandle);
-
-					//  Find out if the device is a system mouse or keyboard.
-
-					_hidUsage = _myHid.GetHidUsage(_myHid.Capabilities);
-
-					//Close the handle and reopen it with read/write access.
-
-					_hidHandle.Close();
-
-					_hidHandle = _myHid.OpenHandle(myDevicePathName, true);
-
-
-					if (_hidHandle.IsInvalid)
-					{
-						AddUsbEvent(
-							"Unable to open HID for read/write access. HID usage: " +
-							_hidUsage);
-
-						Debug.WriteLine(
-							"Windows has exclusive access to this HID device.");
-					}
-					else
-					{
-						if (_myHid.Capabilities.InputReportByteLength > 0)
-						{
-							//  Set the size of the Input report buffer. 
-
-							var inputReportBuffer = new Byte[_myHid.Capabilities.InputReportByteLength];
-
-							_deviceData = new FileStream(_hidHandle, FileAccess.Read | FileAccess.Write, inputReportBuffer.Length, false);
-						}
-
-						if (_myHid.Capabilities.OutputReportByteLength > 0)
-						{
-							Byte[] outputReportBuffer = null;
-						}
-						//  Flush any waiting reports in the input buffer. (optional)
-
-						_myHid.FlushQueue(_hidHandle);
-
-						SetUsbStatus("USB device connected", "VID: " + _myVendorId.ToString("X4") + "  PID: " + _myProductId.ToString("X4"), Color.LimeGreen);
-					}
-				}
-				else
-				{
-					Debug.WriteLine("HID device not found");
-					SetUsbStatus("USB device not connected", "Waiting for device...", indicatorColor: Color.DimGray);
-					EnableFormControls();
-				}
-				return _deviceHandleObtained;
-			}
-			catch (Exception ex)
-			{
-				DisplayException(Name, ex);
-				throw;
-			}
-		}
-
 		/// <summary>
 		/// Finds the STM32 WinUSB interface and opens its Bulk IN/OUT pipes.
 		/// </summary>
@@ -1444,76 +1167,6 @@ namespace GenericHid
         }
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////////
-        ///  <summary>
-        ///  Enables accessing a form's controls from another thread 
-        ///  </summary>
-        ///  
-        ///  <param name="action"> a FormActions member that names the action to perform on the form </param>
-        ///  <param name="textToDisplay"> text that the form displays or the code uses for 
-        ///  another purpose. Actions that don't use text ignore this parameter.  </param>
-
-        private void MyMarshalDataToForm(FormActions action, String textToDisplay)
-		{
-			try
-			{
-				object[] args = { action, textToDisplay };
-
-				//  The AccessForm routine contains the code that accesses the form.
-
-				MarshalDataToForm marshalDataToFormDelegate = AccessForm;
-
-				//  Execute AccessForm, passing the parameters in args.
-
-				Invoke(marshalDataToFormDelegate, args);
-			}
-			catch (Exception ex)
-			{
-				DisplayException(Name, ex);
-				throw;
-			}
-		}
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Timeout if read via interrupt transfer doesn't return.
-		/// </summary>
-
-		private void OnReadTimeout()
-		{
-			try
-			{
-				AddUsbEvent("Read timeout");
-
-				CloseCommunications();
-
-				_transferInProgress = false;
-				_sendOrGet = SendOrGet.Send;
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine("OnReadTimeout: " + ex.Message);
-			}
-		}
-		/// <summary>
-		/// Timeout if write via interrupt transfer doesn't return.
-		/// </summary>
-
-		private void OnWriteTimeout()
-		{
-			try
-			{
-				AddUsbEvent("Write timeout");
-
-				CloseCommunications();
-
-				_transferInProgress = false;
-				_sendOrGet = SendOrGet.Get;
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine("OnWriteTimeout: " + ex.Message);
-			}
-		}
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/// <summary>
 		/// Alternat sending and getting a report.
 		/// </summary>
@@ -1549,9 +1202,6 @@ namespace GenericHid
 
 			_periodicTransfers.Start();
 
-			_transferType = TransferTypes.Interrupt;
-			_reportType = ReportTypes.Output;
-
 			_periodicTransfersRequested = true;
 			PeriodicTransfers();
 		}
@@ -1584,141 +1234,6 @@ namespace GenericHid
 
 		private void radFeature_CheckedChanged(object sender, EventArgs e)
 		{
-		}
-
-
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////
-        ///  <summary>
-        ///  Request an Input report.
-        ///  Assumes report ID = 0.
-        ///  </summary>
-
-        private async void RequestToGetInputReport()
-		{
-			const Int32 readTimeout = 500;
-
-			String byteValue = null;
-			Byte[] inputReportBuffer = null;
-
-			try
-			{
-				Boolean success = false;
-
-				//  If the device hasn't been detected, was removed, or timed out on a previous attempt
-				//  to access it, look for the device.
-
-				if (!_deviceHandleObtained)
-				{
-					_deviceHandleObtained = FindTheHid();
-				}
-
-				if (_deviceHandleObtained)
-				{
-					//  Don't attempt to exchange reports if valid handles aren't available
-					//  (as for a mouse or keyboard under Windows 2000 and later.)
-
-					if (!_hidHandle.IsInvalid)
-					{
-						//  Read an Input report.
-
-						//  Don't attempt to send an Input report if the HID has no Input report.
-						//  (The HID spec requires all HIDs to have an interrupt IN endpoint,
-						//  which suggests that all HIDs must support Input reports.)
-
-						if (_myHid.Capabilities.InputReportByteLength > 0)
-						{
-							//  Set the size of the Input report buffer. 
-
-							inputReportBuffer = new Byte[_myHid.Capabilities.InputReportByteLength];
-
-							if (_transferType.Equals(TransferTypes.Control))
-							{
-								{
-									_transferInProgress = true;
-
-									//  Read a report using a control transfer.
-
-									success = _myHid.GetInputReportViaControlTransfer(_hidHandle, ref inputReportBuffer);
-									_transferInProgress = false;
-								}
-							}
-							else
-							{
-								{
-									_transferInProgress = true;
-
-									//  Read a report using interrupt transfers. 
-									//  Timeout if no report available.
-									//  To enable reading a report without blocking the calling thread, uses Filestream's ReadAsync method.                                               
-
-									// Create a delegate to execute on a timeout.
-
-									Int32 bytesRead;
-
-									using (var cts = new CancellationTokenSource())
-									{
-										cts.CancelAfter(readTimeout);
-
-										bytesRead =
-											await _myHid.GetInputReportViaInterruptTransfer(
-												_deviceData,
-												inputReportBuffer,
-												cts);
-									}
-
-									_transferInProgress = false;
-
-									if (bytesRead > 0)
-									{
-										success = true;
-										Debug.Print("bytes read (includes report ID) = " + Convert.ToString(bytesRead));
-									}
-								}
-							}
-						}
-						else
-						{
-							AddUsbEvent("HID has no Input report");
-						}
-					}
-					else
-					{
-						AddUsbEvent("Invalid HID handle");
-					}
-
-					if (success)
-					{
-						DisplayReportData(inputReportBuffer, ReportTypes.Input, ReportReadOrWritten.Read);
-					}
-					else
-					{
-						CloseCommunications();
-						AddUsbEvent("Failed to read Input report");
-					}
-				}
-			}
-			catch (OperationCanceledException)
-			{
-				HandleUsbDisconnect("Read timeout");
-			}
-			catch (IOException ex)
-			{
-				HandleUsbDisconnect(ex.Message);
-			}
-			catch (ObjectDisposedException ex)
-			{
-				HandleUsbDisconnect(ex.Message);
-			}
-			catch (UnauthorizedAccessException ex)
-			{
-				HandleUsbDisconnect(ex.Message);
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine("USB read error: " + ex);
-				HandleUsbDisconnect(ex.Message);
-			}
-
 		}
 
 
@@ -1803,177 +1318,6 @@ namespace GenericHid
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////////
         ///  <summary>
-        ///  Sends an Output report.
-        ///  Assumes report ID = 0.
-        ///  </summary>
-
-        private async void RequestToSendOutputReport()
-		{
-			const Int32 writeTimeout = 500;
-			String byteValue = null;
-
-			try
-			{
-				//  If the device hasn't been detected, was removed, or timed out on a previous attempt
-				//  to access it, look for the device.
-
-				if (!_deviceHandleObtained)
-				{
-					_deviceHandleObtained = FindTheHid();
-				}
-
-				if (_deviceHandleObtained)
-				{
-				}
-				//  Don't attempt to exchange reports if valid handles aren't available
-				//  (as for a mouse or keyboard.)
-
-				if (!_hidHandle.IsInvalid)
-				{
-					//  Don't attempt to send an Output report if the HID has no Output report.
-
-					if (_myHid.Capabilities.OutputReportByteLength > 0)
-					{
-						//  Set the size of the Output report buffer.   
-
-						var outputReportBuffer = new Byte[_myHid.Capabilities.OutputReportByteLength];
-
-						//  Store the report ID in the first byte of the buffer:
-
-						outputReportBuffer[0] = 0;
-
-						//  Store the report data following the report ID.
-						//  Use the data in the combo boxes on the form.
-                        ////////////////////////////////////////////////////////////////////////////////////////////////////-------------------------------------------------
-                        outputReportBuffer[1] = Convert.ToByte(numericUpDown1.Value);
-                        outputReportBuffer[2] = Convert.ToByte(trackBar1.Value);
-                        outputReportBuffer[3] = Convert.ToByte(trackBar2.Value);
-                        outputReportBuffer[4] = Convert.ToByte(trackBar3.Value);
-
-						if (outputReportBuffer.Length > 5)
-						{
-							outputReportBuffer[5] = 0;
-						}
-
-						if (_monitorForm != null && !_monitorForm.IsDisposed)
-						{
-							_monitorForm.ShowTx(outputReportBuffer);
-						}
-
-						//  Write a report.
-
-						Boolean success;
-
-						if (_transferType.Equals(TransferTypes.Control))
-						{
-							{
-								_transferInProgress = true;
-
-								//  Use a control transfer to send the report,
-								//  even if the HID has an interrupt OUT endpoint.
-
-								success = _myHid.SendOutputReportViaControlTransfer(_hidHandle, outputReportBuffer);
-
-								_transferInProgress = false;
-							}
-						}
-						else
-						{
-							Debug.Print("interrupt");
-							_transferInProgress = true;
-
-							// The CancellationTokenSource specifies the timeout value and the action to take on a timeout.
-							using (var cts = new CancellationTokenSource())
-							{
-								cts.CancelAfter(writeTimeout);
-
-								success =
-									await _myHid.SendOutputReportViaInterruptTransfer(
-										_deviceData,
-										_hidHandle,
-										outputReportBuffer,
-										cts);
-							}
-
-							_transferInProgress = false;
-						}
-						if (success)
-						{
-							DisplayReportData(outputReportBuffer, ReportTypes.Output, ReportReadOrWritten.Written);
-						}
-						else
-						{
-							CloseCommunications();
-							AddUsbEvent("Failed to send Output report");
-						}
-					}
-				}
-				else
-				{
-					AddUsbEvent("HID has no Output report");
-				}
-			}
-
-			catch (OperationCanceledException)
-			{
-				HandleUsbDisconnect("Write timeout");
-			}
-			catch (IOException ex)
-			{
-				HandleUsbDisconnect(ex.Message);
-			}
-			catch (ObjectDisposedException ex)
-			{
-				HandleUsbDisconnect(ex.Message);
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine("USB write error: " + ex);
-				HandleUsbDisconnect(ex.Message);
-			}
-		}
-
- 
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /// <summary>
-        /// Request to send an Output report or get an Input report.
-        /// </summary>
-
-        private void SendOutputReportOrGetInputReport()
-		{
-			try
-			{
-				//  If the device hasn't been detected, was removed, or timed out on a previous attempt
-				//  to access it, look for the device.
-
-				if (!_deviceHandleObtained)
-				{
-					_deviceHandleObtained = FindTheHid();
-				}
-
-				if (_deviceHandleObtained)
-				{
-					if (_sendOrGet == SendOrGet.Send)
-					{
-						RequestToSendOutputReport();
-						_sendOrGet = SendOrGet.Get;
-					}
-					else
-					{
-						RequestToGetDATAReport();
-						_sendOrGet = SendOrGet.Send;
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				DisplayException(Name, ex);
-				throw;
-			}
-		}
-
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////
-        ///  <summary>
         ///  Perform actions that must execute when the program ends.
         ///  </summary>
 
@@ -2004,8 +1348,6 @@ namespace GenericHid
 			{
 			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-				_myHid = new Hid();
-
 				_periodicTransfers = new System.Timers.Timer(periodicTransferInterval);
 				_periodicTransfers.Elapsed += DoPeriodicTransfers;
 				_periodicTransfers.Stop();
@@ -2143,184 +1485,6 @@ namespace GenericHid
             chart1.Series["Series1"].Points.Clear();
         }
 
-        private void GetInputReportInterrupt(object sender, EventArgs e)
-        {
-            try
-            {
-                if (_transferInProgress)
-                {
-                    DisplayTransferInProgressMessage();
-                }
-                else
-                {
-                    //  Don't allow another transfer request until this one completes.
-                    //  Move the focus away from the button to prevent the focus from 
-                    //  switching to the next control in the tab order on disabling the button.
-
-                    _transferType = TransferTypes.Interrupt;
-                    RequestToGetInputReport();
-                }
-            }
-            catch (Exception ex)
-            {
-                DisplayException(Name, ex);
-                throw;
-            }
-        }
-
-
-
-        private async void RequestToGetDATAReport()
-        {
-            const Int32 readTimeout = 5000;
-
-            String byteValue = null;
-            Byte[] inputReportBuffer = null;
-
-            try
-            {
-                Boolean success = false;
-
-                //  If the device hasn't been detected, was removed, or timed out on a previous attempt
-                //  to access it, look for the device.
-
-                if (!_deviceHandleObtained)
-                {
-                    _deviceHandleObtained = FindTheHid();
-                }
-
-                if (_deviceHandleObtained)
-                {
-                    //  Don't attempt to exchange reports if valid handles aren't available
-                    //  (as for a mouse or keyboard under Windows 2000 and later.)
-
-                    if (!_hidHandle.IsInvalid)
-                    {
-                        //  Read an Input report.
-
-                        //  Don't attempt to send an Input report if the HID has no Input report.
-                        //  (The HID spec requires all HIDs to have an interrupt IN endpoint,
-                        //  which suggests that all HIDs must support Input reports.)
-
-                        if (_myHid.Capabilities.InputReportByteLength > 0)
-                        {
-                            //  Set the size of the Input report buffer. 
-
-                            inputReportBuffer = new Byte[_myHid.Capabilities.InputReportByteLength];
-
-                            if (_transferType.Equals(TransferTypes.Control))
-                            {
-                                {
-                                    _transferInProgress = true;
-
-                                    //  Read a report using a control transfer.
-
-                                    success = _myHid.GetInputReportViaControlTransfer(_hidHandle, ref inputReportBuffer);
-                                    _transferInProgress = false;
-                                }
-                            }
-                            else
-                            {
-                                {
-                                    _transferInProgress = true;
-
-									//  Read a report using interrupt transfers. 
-									//  Timeout if no report available.
-									//  To enable reading a report without blocking the calling thread, uses Filestream's ReadAsync method.                                               
-
-									// Create a delegate to execute on a timeout.
-									Int32 bytesRead;
-
-									using (var cts = new CancellationTokenSource())
-									{
-										cts.CancelAfter(readTimeout);
-										bytesRead = await _myHid.GetInputReportViaInterruptTransfer(_deviceData, inputReportBuffer, cts);
-									}
-
-									_transferInProgress = false;
-
-                                    if (bytesRead > 0)
-                                    {
-                                        success = true;
-                                        Debug.Print("bytes read (includes report ID) = " + Convert.ToString(bytesRead));
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-							AddUsbEvent("HID has no Input report");
-						}
-                    }
-                    else
-                    {
-						AddUsbEvent("Invalid HID handle");
-					}
-
-                    if (success)
-                    {
-
-						///////////////////////���� ����� �� �� ������
-
-
-						if (_monitorForm != null && !_monitorForm.IsDisposed)
-						{
-							_monitorForm.ShowRx(inputReportBuffer);
-						}
-
-						Int32 temp = 0;
-                        Int32 pres = 0;
-						Int32 hum = 0;
-						/*
-						temp = (inputReportBuffer[6] << 24) | (inputReportBuffer[7] << 16) | (inputReportBuffer[8] << 8) | inputReportBuffer[9];
-                        pres = (inputReportBuffer[10] << 24) | (inputReportBuffer[11] << 16) | (inputReportBuffer[12] << 8) | inputReportBuffer[13];
-						hum = (inputReportBuffer[14] << 24) | (inputReportBuffer[15] << 16) | (inputReportBuffer[16] << 8) | inputReportBuffer[17];
-						*/
-
-						temp = (inputReportBuffer[6] | (inputReportBuffer[7] << 8) | (inputReportBuffer[8] << 16) | (inputReportBuffer[9] << 24));
-						pres = (inputReportBuffer[10] | (inputReportBuffer[11] << 8) | (inputReportBuffer[12] << 16) | (inputReportBuffer[13] << 24));
-						hum = inputReportBuffer[14] | (inputReportBuffer[15] << 8) | (inputReportBuffer[16] << 16) | (inputReportBuffer[17] << 24);
-
-
-
-						label5.Text = temp.ToString();
-                        label6.Text = pres.ToString();
-						label7.Text = hum.ToString();	//(pres/100)(".")(pres % 100).ToString();
-
-					}
-                    else
-                    {
-                        CloseCommunications();
-						AddUsbEvent("Failed to read Input report");
-					}
-                }
-            }
-
-			catch (OperationCanceledException)
-			{
-				HandleUsbDisconnect("Read timeout");
-			}
-
-			catch (IOException ex)
-			{
-				HandleUsbDisconnect(ex.Message);
-			}
-			catch (ObjectDisposedException ex)
-			{
-				HandleUsbDisconnect(ex.Message);
-			}
-			catch (UnauthorizedAccessException ex)
-			{
-				HandleUsbDisconnect(ex.Message);
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine("USB read error: " + ex);
-				HandleUsbDisconnect(ex.Message);
-			}
-
-		}
-
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/*
         to save settings from some certain object's settings in form 
@@ -2366,7 +1530,6 @@ namespace GenericHid
 				return;
 			}
 
-			_transferType = TransferTypes.Interrupt;
 			RequestBulkExchange();
 		}
 
@@ -2436,10 +1599,6 @@ namespace GenericHid
 			{
 				return;
 			}
-
-			_transferType = TransferTypes.Interrupt;
-			_reportType = ReportTypes.Output;
-			_sendOrGet = SendOrGet.Send;
 
 			PeriodicTransfersStart();
 		}
@@ -2533,7 +1692,6 @@ namespace GenericHid
 					return;
 				}
 
-				_sendOrGet = SendOrGet.Send;
 				PeriodicTransfersStart();
 
 				if (_monitorForm != null && !_monitorForm.IsDisposed)

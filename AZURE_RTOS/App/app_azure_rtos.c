@@ -115,6 +115,13 @@ VOID tx_application_define(VOID *first_unused_memory)
   UINT ux_pool_ready = 0U;
 
   (void)first_unused_memory;
+
+  /* Must happen before any other thread can start logging: this is the
+     earliest point ThreadX object creation is valid (tx_kernel_enter() has
+     just run its low-level init and is calling us back), and it arms the
+     debug-log mutex used by every Debug_Log_* call from here on. */
+  Debug_Log_ThreadingInit();
+
   Debug_Log_SetStage("ThreadX application definition");
   Debug_Log_Line("[RTOS] tx_application_define entered");
 

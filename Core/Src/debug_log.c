@@ -1,12 +1,58 @@
 #include "debug_log.h"
 
 #include "main.h"
+#include "tx_api.h"
 
 #define DEBUG_BAUD_RATE                 115200U
 #define DEBUG_TX_TIMEOUT                1000000U
 
 static uint8_t debug_ready;
 static const char *debug_stage = "before debug init";
+static TX_MUTEX debug_log_mutex;
+static uint8_t debug_log_mutex_ready;
+
+/* USB/network/sensor/heartbeat threads (different priorities) all log
+   concurrently; without serialization a preemption mid-line interleaves two
+   threads' output into unreadable garbage. TX_INHERIT avoids priority
+   inversion if a low-priority thread is holding the lock when a
+   higher-priority thread wants to log.
+   Deliberately NOT used by Debug_Log_Fault()/Error_Handler(): those run
+   from exception/ISR context or right before halting with interrupts
+   disabled, where a blocking mutex call is illegal or could deadlock on a
+   lock a now-frozen thread still owns. Those paths write raw and unlocked;
+   a little interleaving in a crash dump is an acceptable trade for it
+   never being suppressed by a stuck lock. */
+static void debug_lock(void)
+{
+  if (debug_log_mutex_ready != 0U)
+  {
+    (void)tx_mutex_get(&debug_log_mutex, TX_WAIT_FOREVER);
+  }
+}
+
+static void debug_unlock(void)
+{
+  if (debug_log_mutex_ready != 0U)
+  {
+    (void)tx_mutex_put(&debug_log_mutex);
+  }
+}
+
+void Debug_Log_ThreadingInit(void)
+{
+  /* Must run after tx_kernel_enter() (i.e. from tx_application_define() or
+     later), which is the only place ThreadX object creation is guaranteed
+     valid. Debug_Log_Init() itself runs from main() before the scheduler
+     exists, when nothing can race it yet, so it is intentionally not
+     created there. Until this runs, debug_lock()/debug_unlock() are no-ops
+     (debug_log_mutex_ready stays 0), so early boot logging before the
+     scheduler starts still works, just unlocked. */
+  if ((debug_log_mutex_ready == 0U) &&
+      (tx_mutex_create(&debug_log_mutex, "Debug log", TX_INHERIT) == TX_SUCCESS))
+  {
+    debug_log_mutex_ready = 1U;
+  }
+}
 
 static void debug_put_char(char character)
 {
@@ -80,8 +126,10 @@ void Debug_Log_Write(const char *text)
 
 void Debug_Log_Line(const char *text)
 {
+  debug_lock();
   Debug_Log_Write(text);
   Debug_Log_Write("\n");
+  debug_unlock();
 }
 
 void Debug_Log_U32(const char *label, uint32_t value)
@@ -89,6 +137,7 @@ void Debug_Log_U32(const char *label, uint32_t value)
   char digits[10];
   uint32_t count = 0U;
 
+  debug_lock();
   Debug_Log_Write(label);
   do
   {
@@ -101,6 +150,7 @@ void Debug_Log_U32(const char *label, uint32_t value)
     debug_put_char(digits[--count]);
   }
   Debug_Log_Write("\n");
+  debug_unlock();
 }
 
 void Debug_Log_I32(const char *label, int32_t value)
@@ -109,6 +159,7 @@ void Debug_Log_I32(const char *label, int32_t value)
   uint32_t magnitude;
   uint32_t count = 0U;
 
+  debug_lock();
   Debug_Log_Write(label);
   if (value < 0)
   {
@@ -132,9 +183,10 @@ void Debug_Log_I32(const char *label, int32_t value)
     debug_put_char(digits[--count]);
   }
   Debug_Log_Write("\n");
+  debug_unlock();
 }
 
-void Debug_Log_Hex(const char *label, uint32_t value)
+static void raw_hex(const char *label, uint32_t value)
 {
   static const char hexadecimal[] = "0123456789ABCDEF";
   int32_t shift;
@@ -148,6 +200,13 @@ void Debug_Log_Hex(const char *label, uint32_t value)
   Debug_Log_Write("\n");
 }
 
+void Debug_Log_Hex(const char *label, uint32_t value)
+{
+  debug_lock();
+  raw_hex(label, value);
+  debug_unlock();
+}
+
 void Debug_Log_IPv4(const char *label, uint32_t address)
 {
   uint32_t octets[4];
@@ -158,6 +217,7 @@ void Debug_Log_IPv4(const char *label, uint32_t address)
   octets[2] = (address >> 8) & 0xFFU;
   octets[3] = address & 0xFFU;
 
+  debug_lock();
   Debug_Log_Write(label);
   for (index = 0U; index < 4U; index++)
   {
@@ -181,6 +241,7 @@ void Debug_Log_IPv4(const char *label, uint32_t address)
     }
   }
   Debug_Log_Write("\n");
+  debug_unlock();
 }
 
 void Debug_Log_SetStage(const char *stage)
@@ -188,8 +249,11 @@ void Debug_Log_SetStage(const char *stage)
   if (stage != NULL)
   {
     debug_stage = stage;
+    debug_lock();
     Debug_Log_Write("[BOOT] ");
-    Debug_Log_Line(stage);
+    Debug_Log_Write(stage);
+    Debug_Log_Write("\n");
+    debug_unlock();
   }
 }
 
@@ -200,14 +264,24 @@ const char *Debug_Log_GetStage(void)
 
 void Debug_Log_Fault(const char *fault_name)
 {
+  /* Runs from NMI/HardFault/MemManage/BusFault/UsageFault exception context
+     (see stm32f7xx_it.c) or, transitively through Error_Handler(), possibly
+     from an interrupt-context HAL callback. Deliberately bypasses
+     debug_lock(): tx_mutex_get() is not legal from ISR/exception context,
+     and even if it were, the mutex could be permanently held by whatever
+     thread this fault just interrupted mid-log. Writes go out raw and
+     unlocked -- worst case is an interleaved crash dump, not a hang that
+     loses it entirely. */
   Debug_Log_Write("*** CPU FAULT: ");
-  Debug_Log_Line(fault_name);
+  Debug_Log_Write(fault_name);
+  Debug_Log_Write("\n");
   Debug_Log_Write("last stage: ");
-  Debug_Log_Line(debug_stage);
-  Debug_Log_Hex("CFSR  = ", SCB->CFSR);
-  Debug_Log_Hex("HFSR  = ", SCB->HFSR);
-  Debug_Log_Hex("DFSR  = ", SCB->DFSR);
-  Debug_Log_Hex("MMFAR = ", SCB->MMFAR);
-  Debug_Log_Hex("BFAR  = ", SCB->BFAR);
-  Debug_Log_Hex("AFSR  = ", SCB->AFSR);
+  Debug_Log_Write(debug_stage);
+  Debug_Log_Write("\n");
+  raw_hex("CFSR  = ", SCB->CFSR);
+  raw_hex("HFSR  = ", SCB->HFSR);
+  raw_hex("DFSR  = ", SCB->DFSR);
+  raw_hex("MMFAR = ", SCB->MMFAR);
+  raw_hex("BFAR  = ", SCB->BFAR);
+  raw_hex("AFSR  = ", SCB->AFSR);
 }

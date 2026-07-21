@@ -133,6 +133,14 @@ namespace GenericHid
 					{
 						lastDevice = true;
 					}
+					else if (memberIndex >= devicePathName.Length)
+					{
+						// The caller's buffer is sized for a single embedded device's
+						// interface (this app talks to one specific device, not a host
+						// enumerating an arbitrary number of peripherals), so stop here
+						// instead of writing past the end of devicePathName below.
+						lastDevice = true;
+					}
 					else
 					{
 						// A device is present.

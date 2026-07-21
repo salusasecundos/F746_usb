@@ -28,3 +28,14 @@ C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\bin\Debug\normnfd.nlp
 C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\bin\Debug\normnfkc.nlp
 C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\bin\Debug\normnfkd.nlp
 C:\DATA\project\RTOS_TEST_GUI_TEST\generic_hid_cs_v62\obj\Debug\GenericHid.pdb
+l:\PROJECTS_REPOSITORY\F746_usb\generic_hid_cs_v62\bin\Debug\GenericHid.exe.config
+l:\PROJECTS_REPOSITORY\F746_usb\generic_hid_cs_v62\bin\Debug\GenericHid.exe
+l:\PROJECTS_REPOSITORY\F746_usb\generic_hid_cs_v62\bin\Debug\GenericHid.pdb
+l:\PROJECTS_REPOSITORY\F746_usb\generic_hid_cs_v62\bin\Debug\System.Runtime.InteropServices.RuntimeInformation.dll
+l:\PROJECTS_REPOSITORY\F746_usb\generic_hid_cs_v62\obj\Debug\GenericHid.FrmMain.resources
+l:\PROJECTS_REPOSITORY\F746_usb\generic_hid_cs_v62\obj\Debug\GenericHid.FrmMonitor.resources
+l:\PROJECTS_REPOSITORY\F746_usb\generic_hid_cs_v62\obj\Debug\GenericHid.Properties.Resources.resources
+l:\PROJECTS_REPOSITORY\F746_usb\generic_hid_cs_v62\obj\Debug\GenericHid.csproj.GenerateResource.cache
+l:\PROJECTS_REPOSITORY\F746_usb\generic_hid_cs_v62\obj\Debug\GenericHid.exe
+l:\PROJECTS_REPOSITORY\F746_usb\generic_hid_cs_v62\obj\Debug\GenericHid.pdb
+L:\PROJECTS_REPOSITORY\F746_usb\generic_hid_cs_v62\obj\Debug\GenericHid.csprojResolveAssemblyReference.cache

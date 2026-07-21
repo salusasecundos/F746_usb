@@ -34,6 +34,10 @@ extern "C" {
 
 extern I2C_HandleTypeDef hi2c1;
 extern I2C_HandleTypeDef hi2c3;
+/* I2C1 (BME280) is DMA-driven so the low-priority sensor thread never has
+   to busy-poll the peripheral; I2C3 (touch) stays polling. */
+extern DMA_HandleTypeDef hdma_i2c1_rx;
+extern DMA_HandleTypeDef hdma_i2c1_tx;
 
 /* USER CODE BEGIN Private defines */
 

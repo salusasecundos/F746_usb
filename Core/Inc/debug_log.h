@@ -8,6 +8,7 @@ extern "C" {
 #include <stdint.h>
 
 void Debug_Log_Init(void);
+void Debug_Log_ThreadingInit(void);
 void Debug_Log_Write(const char *text);
 void Debug_Log_Line(const char *text);
 void Debug_Log_U32(const char *label, uint32_t value);

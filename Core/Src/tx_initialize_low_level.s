@@ -456,7 +456,9 @@ SysTick_Handler:
 @
 
 SYSTEM_CLOCK      =   216000000
-SYSTICK_CYCLES    =   ((SYSTEM_CLOCK / 100) -1)
+@ 1 ms/tick to match TX_TIMER_TICKS_PER_SECOND=1000 in tx_user.h -- see
+@ TICK_RATE.md at the repository root. Was ((SYSTEM_CLOCK / 100) -1).
+SYSTICK_CYCLES    =   ((SYSTEM_CLOCK / 1000) -1)
 
     .text 32
     .align 4

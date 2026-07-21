@@ -5,7 +5,13 @@
 #include "debug_log.h"
 
 #define BME280_THREAD_STACK_SIZE          2048U
-#define BME280_THREAD_PRIORITY              18U
+/* Must outrank GUIX (12) and the touch thread (13): ThreadX preemption is a
+   strict priority order with no "close enough" tolerance, so anything
+   numerically lower than GUIX can starve this thread for the whole
+   duration of a GUIX redraw burst (e.g. screen-saver activation) and blow
+   through the blocking-I2C timeouts in bme280_sensor.c, which reads back
+   as the sensor dropping to zero on the host. */
+#define BME280_THREAD_PRIORITY              11U
 #define BME280_SAMPLE_PERIOD_SECONDS          1U
 #define BME280_RETRY_PERIOD_SECONDS           5U
 #define BME280_LOG_PERIOD_SECONDS            30U

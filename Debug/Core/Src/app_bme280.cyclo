@@ -1,5 +1,5 @@
-../Core/Src/app_bme280.c:19:14:seconds_to_ticks	2
-../Core/Src/app_bme280.c:25:13:log_detection_failure	3
-../Core/Src/app_bme280.c:46:13:log_sample	1
-../Core/Src/app_bme280.c:53:6:App_BME280_Init	4
-../Core/Src/app_bme280.c:87:13:BME280_Thread_Entry	8
+../Core/Src/app_bme280.c:25:14:seconds_to_ticks	2
+../Core/Src/app_bme280.c:31:13:log_detection_failure	3
+../Core/Src/app_bme280.c:52:13:log_sample	1
+../Core/Src/app_bme280.c:59:6:App_BME280_Init	4
+../Core/Src/app_bme280.c:93:13:BME280_Thread_Entry	8

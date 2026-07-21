@@ -124,8 +124,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="Debugging.cs" />
-    <Compile Include="DebuggingDeclarations.cs" />
     <Compile Include="DeviceManagement.cs" />
     <Compile Include="DeviceManagementDeclarations.cs" />
     <Compile Include="FileIODeclarations.cs" />
@@ -136,8 +134,6 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GenericHid.cs" />
-    <Compile Include="Hid.cs" />
-    <Compile Include="HidDeclarations.cs" />
     <Compile Include="UsbInterfaceDiscovery.cs" />
     <Compile Include="WinUsbDevice.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
